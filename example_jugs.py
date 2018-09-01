@@ -1,57 +1,69 @@
-from mk.core import Var, eq, disj, conj
-from mk.ext import call_fresh, fresh, conjp, conde, zzz, runp
+from mk.arithmetic import add, gte, lte, neq
+from mk.core import Var, conj, disj, eq
+from mk.ext import call_fresh, conde, conjp, fresh, run, zzz
 from mk.list import pair_to_list
-from mk.arithmetic import add, pos, less, int_to_pair, pair_to_int
 
 
-zero = ()
-one = int_to_pair(1)
-two = int_to_pair(2)
-three = int_to_pair(3)
-four = int_to_pair(4)
-five = int_to_pair(5)
-six = int_to_pair(6)
-
-
-def neqo(a, b):
-    return call_fresh(
-        lambda X: conj(
-            disj(add(a, X, b), add(b, X, a)),
-            pos(X)))
-
-
-def jugso(A):
+def jugs(states):
     return disj(
-        eq(((zero, zero), ()), A),
-        fresh(lambda B, S, PB, PS, T, PT: conjp(
-            eq(((B, S), T), A),
-            zzz(lambda: jugso(T)),
-            less(B, six),
-            less(S, four),
-            eq(((PB, PS), PT), T),
+        eq(((0, 0, ""), ()), states),
+        fresh(lambda big, small, act, prev_big, prev_small, tail, _, __: conjp(
+            eq(((big, small, act), tail), states),
+            eq(((prev_big, prev_small, _), __), tail),
+            zzz(lambda: jugs(tail)),
             conde(
                 [
-                    neqo(B, PB),
                     conde(
-                        [disj(eq(B, five), eq(B, zero)), eq(S, PS)],
+                        [
+                            conde(
+                                [eq(big, 5), eq(act, "fill big")],
+                                [eq(big, 0), eq(act, "empty big")]),
+                            eq(small, prev_small)],
                         [
                             call_fresh(
-                                lambda R: conjp(
-                                    add(B, S, R), add(PB, PS, R),
+                                lambda total: conjp(
+                                    add(big, small, total),
+                                    add(prev_big, prev_small, total),
                                     conde(
-                                        [eq(B, five)],
-                                        [eq(S, three)],
-                                        [eq(S, zero), neqo(B, five)],
-                                        [eq(B, zero), neqo(S, three)])))])],
-                [disj(eq(S, zero), eq(S, three)), neqo(S, PS), eq(B, PB)]))))
+                                        [eq(big, 5), eq(act, "to big")],
+                                        [eq(small, 3), eq(act, "to small")],
+                                        [
+                                            eq(small, 0), neq(big, 5),
+                                            eq(act, "to big")],
+                                        [
+                                            eq(big, 0), neq(small, 3),
+                                            eq(act, "to small")])))]),
+                    neq(big, prev_big)],
+                [
+                    conde(
+                        [eq(small, 3), eq(act, "fill small")],
+                        [eq(small, 0), eq(act, "empty small")]),
+                    neq(small, prev_small), eq(big, prev_big)]),
+            gte(big, 0), lte(big, 5),
+            gte(small, 0), lte(small, 3)
+        )))
 
 
 def main():
-    a = Var()
-    t = Var()
-    for s in runp(1, a, eq(((four, ()), t), a), jugso(a)):
-        for a, b in reversed(pair_to_list(s)):
-            print(pair_to_int(a), pair_to_int(b))
+    states = Var()
+    big = Var()
+    small = Var()
+    _ = Var()
+    __ = Var()
+    for i in range(1, 6):
+        p = conjp(
+            eq(((big, small, _), __), states),
+            disj(
+                eq(big, i),
+                conj(neq(big, i), eq(small, i)),
+            ),
+            jugs(states)
+        )
+        for answer in run(1, states, p):
+            print("{}:".format(i))
+            for b, s, a in reversed(list(pair_to_list(answer))):
+                print(b, s, a)
+            print()
 
 
 if __name__ == '__main__':

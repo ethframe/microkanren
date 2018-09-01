@@ -1,27 +1,24 @@
 from collections import defaultdict
 from itertools import count, islice
 
-
-from .core import Var, walk, is_pair, unwrap
-
-
-def _reify(v, s, n):
-    v = walk(v, s)
-    if isinstance(v, Var):
-        return n[v]
-    if is_pair(v):
-        return (_reify(v[0], s, n), _reify(v[1], s, n))
-    return v
+from .core import Var, walk
+from .stream import iterate
 
 
 def reify(v, s):
-    c = count().__next__
-    n = defaultdict(lambda: "_{}".format(c()))
-    return _reify(v, s, n)
+    n = defaultdict(count().__next__)
+
+    def _reify(v):
+        v = walk(v, s)
+        if isinstance(v, Var):
+            return "_.{}".format(n[v])
+        if isinstance(v, tuple):
+            return tuple(map(_reify, v))
+        return v
+
+    return _reify(v)
 
 
 def run(c, v, g):
-    if c == 0:
-        c = None
-    for s in islice(unwrap(g({})), c):
+    for s in islice(iterate(g({})), None if c == 0 else c):
         yield reify(v, s)

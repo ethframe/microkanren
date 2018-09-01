@@ -1,4 +1,5 @@
-from .core import is_pair
+def is_pair(p):
+    return isinstance(p, tuple) and len(p) == 2
 
 
 def list_to_pair(list_):

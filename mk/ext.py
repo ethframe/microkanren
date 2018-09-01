@@ -1,13 +1,12 @@
-from itertools import starmap
 import inspect
 
-
-from .core import Var, conj, disj, eq
+from .core import Var, conj, disj
 from .run import run
+from .stream import Thunk
 
 
 def call_fresh(fn):
-    return lambda s: fn(Var(s))(s)
+    return lambda s: fn(Var())(s)
 
 
 def conjp(g, *gs):
@@ -26,12 +25,6 @@ def conde(*ggs):
     return disjp(*(conjp(*gs) for gs in ggs))
 
 
-def condp(vs, *ggs):
-    return conde(
-        *(list(starmap(eq, zip(vs, gs[0]))) + list(gs[1:]) for gs in ggs)
-    )
-
-
 def fresh(fn):
     sig = inspect.signature(fn)
     if not all(
@@ -40,11 +33,11 @@ def fresh(fn):
     ):
         raise ValueError(fn)
     n = len(sig.parameters)
-    return lambda s: fn(*(Var(s) for _ in range(n)))(s)
+    return lambda s: fn(*(Var() for _ in range(n)))(s)
 
 
 def zzz(fn):
-    return lambda s: lambda: fn()(s)
+    return lambda s: Thunk(lambda: fn()(s))
 
 
 def runp(c, v, *gs):

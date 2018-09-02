@@ -5,6 +5,9 @@ class Empty:
     def bind(self, goal):
         return self
 
+    def bump(self):
+        return self
+
 
 class Cons:
     __slots__ = ("head", "tail")
@@ -40,20 +43,26 @@ class Thunk:
 
 
 class Deferred:
-    __slots__ = ("stream", "goal")
+    __slots__ = ("stream", "goal", "other")
 
-    def __init__(self, stream, goal):
+    def __init__(self, stream, goal, other=None):
         self.stream = stream
         self.goal = goal
+        self.other = Empty() if other is None else other
 
     def mplus(self, stream):
-        return Deferred(self.stream.mplus(stream), self.goal)
+        other = self.other.mplus(stream)
+        if isinstance(other, Deferred):
+            return Deferred(self.stream, self.goal, other)
+        return other.mplus(Deferred(self.stream, self.goal))
 
     def bind(self, goal):
-        return self.stream.bind(goal).bind(self.goal)
+        return self.other.bind(goal).mplus(
+            self.stream.bind(goal).bind(self.goal)
+        )
 
     def bump(self):
-        return self.stream.bind(self.goal)
+        return self.other.bump().mplus(self.stream.bind(self.goal))
 
 
 def iterate(stream):

@@ -1,4 +1,5 @@
-from mk.arithmetic import add, gte, lte, neq
+from mk.arithmetic import add, gte, lte
+from mk.constraints import neq
 from mk.core import Var, conj, disj, eq
 from mk.ext import call_fresh, conde, conjp, fresh, run, zzz
 from mk.list import pair_to_list

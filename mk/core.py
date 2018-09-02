@@ -14,14 +14,14 @@ def walk(v, s):
     return v
 
 
-def occurs(v, x):
+def occurs(v, x, s):
     if isinstance(x, tuple):
-        return any(occurs(v, i) for i in x)
+        return any(occurs(v, walk(i, s), s) for i in x)
     return v is x
 
 
 def assign(v, x, s):
-    if occurs(v, x):
+    if occurs(v, x, s):
         return None
     s[v] = x
     return s

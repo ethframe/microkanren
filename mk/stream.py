@@ -1,4 +1,9 @@
-class Empty:
+class Stream:
+    def defer(self, stream, goal):
+        return self.mplus(Deferred(stream, goal))
+
+
+class Empty(Stream):
     def mplus(self, stream):
         return stream
 
@@ -9,7 +14,7 @@ class Empty:
         return self
 
 
-class Cons:
+class Cons(Stream):
     __slots__ = ("head", "tail")
 
     def __init__(self, head, tail=None):
@@ -26,7 +31,7 @@ class Cons:
         return self.tail
 
 
-class Thunk:
+class Thunk(Stream):
     __slots__ = ("thunk",)
 
     def __init__(self, thunk):
@@ -42,7 +47,7 @@ class Thunk:
         return self.thunk()
 
 
-class Deferred:
+class Deferred(Stream):
     __slots__ = ("stream", "goal", "other")
 
     def __init__(self, stream, goal, other=None):
@@ -51,10 +56,7 @@ class Deferred:
         self.other = Empty() if other is None else other
 
     def mplus(self, stream):
-        other = self.other.mplus(stream)
-        if isinstance(other, Deferred):
-            return Deferred(self.stream, self.goal, other)
-        return other.mplus(Deferred(self.stream, self.goal))
+        return self.other.mplus(stream).defer(self.stream, self.goal)
 
     def bind(self, goal):
         return self.other.bind(goal).mplus(
@@ -63,6 +65,9 @@ class Deferred:
 
     def bump(self):
         return self.other.bump().mplus(self.stream.bind(self.goal))
+
+    def defer(self, stream, goal):
+        return Deferred(stream, goal, self)
 
 
 def iterate(stream):

@@ -2,9 +2,6 @@ class Var:
     pass
 
 
-_ = Var()
-
-
 def walk(v, subst):
     while isinstance(v, Var):
         u = subst.get(v)
@@ -23,8 +20,7 @@ def occurs(v, x):
 def assoc(v, x, subst):
     if occurs(v, x):
         return None
-    if v is not _:
-        subst[v] = x
+    subst[v] = x
     return [v]
 
 

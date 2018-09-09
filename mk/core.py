@@ -1,60 +1,56 @@
 from .stream import Cons, Empty
+from .unify import Var, unify
 
 
-class Var:
-    pass
+def typeof(x):
+    if isinstance(x, Var):
+        return x
+    elif isinstance(x, tuple):
+        return tuple(typeof(e) for e in x)
+    return type(x)
 
 
-def walk(v, s):
-    while isinstance(v, Var):
-        u = s.get(v)
-        if u is None:
-            return v
-        v = u
-    return v
+def apply_constraints(vs, state):
+    cons = state[2]
+    stream = Cons(state)
+    for v in vs:
+        for g in cons.pop(v, ()):
+            stream = stream.bind(g)
+    return stream
 
 
-def occurs(v, x, s):
-    if isinstance(x, tuple):
-        return any(occurs(v, walk(i, s), s) for i in x)
-    return v is x
-
-
-def assign(v, x, s):
-    if occurs(v, x, s):
-        return None
-    s[v] = x
-    return s
-
-
-def unify(u, v, s):
-    u = walk(u, s)
-    v = walk(v, s)
-    if isinstance(u, Var):
-        if isinstance(v, Var) and u is v:
-            return s
-        return assign(u, v, s)
-    elif isinstance(v, Var):
-        return assign(v, u, s)
-    elif isinstance(u, tuple) and isinstance(v, tuple) and len(u) == len(v):
-        for a, b in zip(u, v):
-            s = unify(a, b, s)
-            if s is None:
-                return None
-        return s
-    return s if u == v else None
+def do_eq(u, v, state):
+    subst, types, cons = state
+    a = unify(u, v, subst)
+    if a is None:
+        return Empty()
+    if unify(typeof(u), typeof(v), types) is None:
+        return Empty()
+    return apply_constraints(a, state)
 
 
 def eq(u, v):
-    def _goal(s):
-        s = unify(u, v, s)
-        return Empty() if s is None else Cons(s)
+    return lambda state: do_eq(u, v, state)
+
+
+def eqt(u, v):
+    def _goal(state):
+        subst, types, cons = state
+        a = unify(typeof(u), v, types)
+        if a is None:
+            return Empty()
+        return apply_constraints(a, state)
     return _goal
 
 
+def copy(state):
+    subst, types, cons = state
+    return subst.copy(), types.copy(), {v: cs.copy() for v, cs in cons.items()}
+
+
 def disj(g1, g2):
-    return lambda s: g1(s.copy()).mplus(g2(s))
+    return lambda state: g1(copy(state)).mplus(g2(state))
 
 
 def conj(g1, g2):
-    return lambda s: g1(s).bind(g2)
+    return lambda state: g1(state).bind(g2)

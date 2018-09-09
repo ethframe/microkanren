@@ -1,24 +1,24 @@
-from .constraints import make_relation
-from .core import Var, assign, walk
+from .deferred import make_relation
 from .stream import Cons, Deferred, Empty
+from .unify import Var, walk
+from .core import do_eq
 
 
 def add(a, b, c):
-    def _goal(s):
-        wa = walk(a, s)
-        wb = walk(b, s)
-        wc = walk(c, s)
+    def _goal(state):
+        subst = state[0]
+        wa = walk(a, subst)
+        wb = walk(b, subst)
+        wc = walk(c, subst)
         if isinstance(wa, Var):
             if isinstance(wb, Var) or isinstance(wc, Var):
-                return Deferred(Cons(s), _goal)
-            return Cons(assign(wa, wc - wb, s))
+                return Deferred(Cons(state), _goal)
+            return do_eq(wa, wc - wb, state)
         if isinstance(wb, Var):
             if isinstance(wc, Var):
-                return Deferred(Cons(s), _goal)
-            return Cons(assign(wb, wc - wa, s))
-        if isinstance(wc, Var):
-            return Cons(assign(wc, wa + wb, s))
-        return Cons(s) if wa + wb == wc else Empty()
+                return Deferred(Cons(state), _goal)
+            return do_eq(wb, wc - wa, state)
+        return do_eq(wc, wa + wb, state)
     return _goal
 
 
@@ -27,27 +27,26 @@ def sub(a, b, c):
 
 
 def mul(a, b, c):
-    def _goal(s):
-        wa = walk(a, s)
-        wb = walk(b, s)
-        wc = walk(c, s)
+    def _goal(state):
+        subst = state[0]
+        wa = walk(a, subst)
+        wb = walk(b, subst)
+        wc = walk(c, subst)
         if isinstance(wa, Var):
             if isinstance(wb, Var) or isinstance(wc, Var):
-                return Deferred(Cons(s), _goal)
+                return Deferred(Cons(state), _goal)
             if wb == 0:
-                return Cons(s) if wc == 0 else Empty()
+                return Cons(state) if wc == 0 else Empty()
             q, r = divmod(wc, wb)
-            return Cons(assign(wa, q, s)) if r == 0 else Empty()
+            return do_eq(wa, q, state) if r == 0 else Empty()
         if isinstance(wb, Var):
             if isinstance(wc, Var):
-                return Deferred(Cons(s), _goal)
+                return Deferred(Cons(state), _goal)
             if wa == 0:
-                return Cons(s) if wc == 0 else Empty()
+                return Cons(state) if wc == 0 else Empty()
             q, r = divmod(wc, wa)
-            return Cons(assign(wb, q, s)) if r == 0 else Empty()
-        if isinstance(wc, Var):
-            return Cons(assign(wc, wa * wb, s))
-        return Cons(s) if wa * wb == wc else Empty()
+            return do_eq(wb, q, state) if r == 0 else Empty()
+        return do_eq(wc, wa * wb, state)
     return _goal
 
 

@@ -10,30 +10,26 @@ class Empty(Stream):
     def bind(self, goal):
         return self
 
-    def bump(self):
+    def next(self):
         return self
 
 
 class Cons(Stream):
-    __slots__ = ("head", "tail")
-
     def __init__(self, head, tail=None):
         self.head = head
         self.tail = Empty() if tail is None else tail
 
     def mplus(self, stream):
-        return Cons(self.head, self.tail.mplus(stream))
+        return Cons(self.head, stream.mplus(self.tail))
 
     def bind(self, goal):
         return Thunk(lambda: goal(self.head).mplus(self.tail.bind(goal)))
 
-    def bump(self):
+    def next(self):
         return self.tail
 
 
 class Thunk(Stream):
-    __slots__ = ("thunk",)
-
     def __init__(self, thunk):
         self.thunk = thunk
 
@@ -43,13 +39,11 @@ class Thunk(Stream):
     def bind(self, goal):
         return Thunk(lambda: self.thunk().bind(goal))
 
-    def bump(self):
+    def next(self):
         return self.thunk()
 
 
 class Deferred(Stream):
-    __slots__ = ("stream", "goal", "other")
-
     def __init__(self, stream, goal, other=None):
         self.stream = stream
         self.goal = goal
@@ -70,8 +64,8 @@ class Deferred(Stream):
         return Deferred(stream, goal, self)
 
 
-def iterate(stream):
+def unfold(stream):
     while not isinstance(stream, Empty):
         if isinstance(stream, Cons):
             yield stream.head
-        stream = stream.bump()
+        stream = stream.next()

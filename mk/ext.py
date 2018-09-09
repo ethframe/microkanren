@@ -1,8 +1,10 @@
 import inspect
+from functools import reduce
 
-from .core import Var, conj, disj
+from .core import copy
 from .run import run
 from .stream import Thunk
+from .unify import Var
 
 
 def call_fresh(fn):
@@ -10,15 +12,13 @@ def call_fresh(fn):
 
 
 def conjp(g, *gs):
-    if gs:
-        return conj(g, conjp(*gs))
-    return g
+    return lambda state: reduce(lambda s, g: s.bind(g), gs, g(state))
 
 
 def disjp(g, *gs):
-    if gs:
-        return disj(g, disjp(*gs))
-    return g
+    return lambda state: reduce(
+        lambda s, o: s.mplus(o), [g(copy(state)) for g in gs], g(state)
+    )
 
 
 def conde(*ggs):
@@ -36,8 +36,8 @@ def fresh(fn):
     return lambda s: fn(*(Var() for _ in range(n)))(s)
 
 
-def zzz(fn):
-    return lambda s: Thunk(lambda: fn()(s))
+def zzz(thunk):
+    return lambda state: Thunk(lambda: thunk()(state))
 
 
 def runp(c, v, *gs):

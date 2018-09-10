@@ -1,17 +1,35 @@
 from collections import defaultdict
 from itertools import count, islice
 
-from .core import Var, walk
-from .stream import iterate
+from .stream import unfold
+from .unify import Var, walk
 
 
-def reify(v, s):
+class ReifiedVar:
+    def __init__(self, name, type):
+        self.name = name
+        self.type = type
+
+    def __repr__(self):
+        return self.name + ":" + self.type
+
+
+def reify(v, state):
+    subst, types, cons = state
     n = defaultdict(count().__next__)
 
-    def _reify(v):
-        v = walk(v, s)
+    def _type(v):
+        v = walk(v, types)
         if isinstance(v, Var):
-            return "_.{}".format(n[v])
+            return "_{}".format(n[v])
+        elif isinstance(v, tuple):
+            return "[{}]".format(", ".join(_type(e) for e in v))
+        return v.__name__
+
+    def _reify(v):
+        v = walk(v, subst)
+        if isinstance(v, Var):
+            return ReifiedVar("_{}".format(n[v]), _type(v))
         if isinstance(v, tuple):
             return tuple(map(_reify, v))
         return v
@@ -19,6 +37,10 @@ def reify(v, s):
     return _reify(v)
 
 
+def initial():
+    return {}, {}, {}
+
+
 def run(c, v, g):
-    for s in islice(iterate(g({})), None if c == 0 else c):
-        yield reify(v, s)
+    for state in islice(unfold(g(initial())), None if c == 0 else c):
+        yield reify(v, state)

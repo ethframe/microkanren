@@ -1,11 +1,8 @@
-from mk.core import eq, Var
+from mk.arithmetic import add, div, mul, sub
+from mk.core import eq, eqt
 from mk.ext import conde, zzz
-from mk.arithmetic import add, sub, mul, div
-from mk.constraints import make_predicate
 from mk.run import run
-
-
-is_int = make_predicate(lambda a: isinstance(a, int))
+from mk.unify import Var
 
 
 def calc(e, o):
@@ -24,7 +21,7 @@ def calc(e, o):
                 [eq("/", op), div(ca, cb, o)],
             )
         ],
-        [is_int(e), eq(e, o)]
+        [eqt(e, int), eq(e, o)]
     )
 
 

@@ -11,14 +11,14 @@ def walk(v, subst):
     return v
 
 
-def occurs(v, x):
+def occurs(v, x, subst):
     if isinstance(x, tuple):
-        return any(occurs(v, e) for e in x)
+        return any(occurs(v, walk(e, subst), subst) for e in x)
     return v is x
 
 
 def assoc(v, x, subst):
-    if occurs(v, x):
+    if occurs(v, x, subst):
         return None
     subst[v] = x
     return [v]

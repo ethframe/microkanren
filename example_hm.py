@@ -20,7 +20,7 @@ class App(namedtuple("App", "fn arg")):
 
 class Sym(namedtuple("Sym", "name")):
     def __repr__(self):
-        return self.name
+        return str(self.name)
 
 
 class Ann(namedtuple("Ann", "term type")):
@@ -35,7 +35,7 @@ class TFunc(namedtuple("TFunc", "arg res")):
 
 class TTerm(namedtuple("TTerm", "name")):
     def __repr__(self):
-        return self.name
+        return str(self.name)
 
 
 @delay

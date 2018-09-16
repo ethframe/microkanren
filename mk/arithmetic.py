@@ -1,53 +1,44 @@
 from .deferred import make_relation
 from .stream import Cons, Deferred, Empty
-from .unify import Var, walk
+from .unify import Var
 from .core import do_eq
+from .ext import walk_args
 
 
-def add(a, b, c):
-    def _goal(state):
-        subst = state[0]
-        wa = walk(a, subst)
-        wb = walk(b, subst)
-        wc = walk(c, subst)
-        if isinstance(wa, Var):
-            if isinstance(wb, Var) or isinstance(wc, Var):
-                return Deferred(Cons(state), _goal)
-            return do_eq(wa, wc - wb, state)
-        if isinstance(wb, Var):
-            if isinstance(wc, Var):
-                return Deferred(Cons(state), _goal)
-            return do_eq(wb, wc - wa, state)
-        return do_eq(wc, wa + wb, state)
-    return _goal
+@walk_args
+def add(goal, state, a, b, c):
+    if isinstance(a, Var):
+        if isinstance(b, Var) or isinstance(c, Var):
+            return Deferred(Cons(state), goal)
+        return do_eq(a, c - b, state)
+    if isinstance(b, Var):
+        if isinstance(c, Var):
+            return Deferred(Cons(state), goal)
+        return do_eq(b, c - a, state)
+    return do_eq(c, a + b, state)
 
 
 def sub(a, b, c):
     return add(b, c, a)
 
 
-def mul(a, b, c):
-    def _goal(state):
-        subst = state[0]
-        wa = walk(a, subst)
-        wb = walk(b, subst)
-        wc = walk(c, subst)
-        if isinstance(wa, Var):
-            if isinstance(wb, Var) or isinstance(wc, Var):
-                return Deferred(Cons(state), _goal)
-            if wb == 0:
-                return Cons(state) if wc == 0 else Empty()
-            q, r = divmod(wc, wb)
-            return do_eq(wa, q, state) if r == 0 else Empty()
-        if isinstance(wb, Var):
-            if isinstance(wc, Var):
-                return Deferred(Cons(state), _goal)
-            if wa == 0:
-                return Cons(state) if wc == 0 else Empty()
-            q, r = divmod(wc, wa)
-            return do_eq(wb, q, state) if r == 0 else Empty()
-        return do_eq(wc, wa * wb, state)
-    return _goal
+@walk_args
+def mul(goal, state, a, b, c):
+    if isinstance(a, Var):
+        if isinstance(b, Var) or isinstance(c, Var):
+            return Deferred(Cons(state), goal)
+        if b == 0:
+            return Cons(state) if c == 0 else Empty()
+        q, r = divmod(c, b)
+        return do_eq(a, q, state) if r == 0 else Empty()
+    if isinstance(b, Var):
+        if isinstance(c, Var):
+            return Deferred(Cons(state), goal)
+        if a == 0:
+            return Cons(state) if c == 0 else Empty()
+        q, r = divmod(c, a)
+        return do_eq(b, q, state) if r == 0 else Empty()
+    return do_eq(c, a * b, state)
 
 
 def div(a, b, c):

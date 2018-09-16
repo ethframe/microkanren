@@ -1,10 +1,10 @@
 import inspect
-from functools import reduce
+from functools import reduce, wraps
 
 from .core import copy
 from .run import run
 from .stream import Thunk
-from .unify import Var
+from .unify import Var, walk
 
 
 def call_fresh(fn):
@@ -42,3 +42,13 @@ def zzz(thunk):
 
 def runp(c, v, *gs):
     return run(c, v, conjp(*gs))
+
+
+def walk_args(fn):
+    @wraps(fn)
+    def _constructor(*args):
+        def _goal(state):
+            subst = state[0]
+            return fn(_goal, state, *(walk(a, subst) for a in args))
+        return _goal
+    return _constructor

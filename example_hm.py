@@ -69,8 +69,8 @@ def infer(e, o, t, m):
             eq(t, TFunc(vt, bt)),
             eq(m, Abs(Ann(Sym(v), vt), ba)),
         )),
-        [eqt(e, int), eq(t, TTerm("int")), eq(m, Ann(e, t))],
-        [eqt(e, bool), eq(t, TTerm("bool")), eq(m, Ann(e, t))],
+        [eqt(e, int), eq(t, TTerm("int")), eq(m, e)],
+        [eqt(e, bool), eq(t, TTerm("bool")), eq(m, e)],
     )
 
 

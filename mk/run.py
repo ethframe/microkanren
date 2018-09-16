@@ -31,7 +31,9 @@ def reify(v, state):
         if isinstance(v, Var):
             return ReifiedVar("_{}".format(n[v]), _type(v))
         if isinstance(v, tuple):
-            return tuple(map(_reify, v))
+            if type(v) == tuple:
+                return tuple(map(_reify, v))
+            return type(v)._make(map(_reify, v))
         return v
 
     return _reify(v)

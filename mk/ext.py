@@ -12,7 +12,9 @@ def call_fresh(fn):
 
 
 def conjp(g, *gs):
-    return lambda state: reduce(lambda s, g: s.bind(g), gs, g(state))
+    return lambda state: reduce(
+        lambda s, g: s.bind(g), gs, g(state)
+    )
 
 
 def disjp(g, *gs):
@@ -22,7 +24,7 @@ def disjp(g, *gs):
 
 
 def conde(*ggs):
-    return disjp(*(conjp(*gs) for gs in ggs))
+    return disjp(*(gs if callable(gs) else conjp(*gs) for gs in ggs))
 
 
 def fresh(fn):

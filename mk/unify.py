@@ -32,6 +32,8 @@ def unify(u, v, subst):
     elif isinstance(v, Var):
         return assoc(v, u, subst)
     elif isinstance(u, tuple) and isinstance(v, tuple) and len(u) == len(v):
+        if type(u) != type(v):
+            return None
         a = []
         for x, y in zip(u, v):
             e = unify(x, y, subst)

@@ -57,8 +57,8 @@ class Deferred(Stream):
             self.stream.bind(goal).bind(self.goal)
         )
 
-    def bump(self):
-        return self.other.bump().mplus(self.stream.bind(self.goal))
+    def next(self):
+        return self.other.next().mplus(self.stream.bind(self.goal))
 
     def defer(self, stream, goal):
         return Deferred(stream, goal, self)

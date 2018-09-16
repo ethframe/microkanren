@@ -1,10 +1,11 @@
 from mk.arithmetic import add, div, mul, sub
 from mk.core import eq, eqt
-from mk.ext import conde, zzz
+from mk.ext import conde, delay
 from mk.run import run
 from mk.unify import Var
 
 
+@delay
 def calc(e, o):
     a, b = Var(), Var()
     ca, cb = Var(), Var()
@@ -12,8 +13,8 @@ def calc(e, o):
     return conde(
         [
             eq((op, a, b), e),
-            zzz(lambda: calc(a, ca)),
-            zzz(lambda: calc(b, cb)),
+            calc(a, ca),
+            calc(b, cb),
             conde(
                 [eq("+", op), add(ca, cb, o)],
                 [eq("-", op), sub(ca, cb, o)],

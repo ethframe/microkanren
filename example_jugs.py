@@ -2,17 +2,18 @@ from mk.arithmetic import add, gte, lte
 from mk.disequality import neq
 from mk.unify import Var
 from mk.core import conj, disj, eq
-from mk.ext import call_fresh, conde, conjp, fresh, run, zzz
+from mk.ext import call_fresh, conde, conjp, fresh, run, delay
 from mk.list import pair_to_list
 
 
+@delay
 def jugs(states):
     return disj(
         eq(((0, 0, ""), ()), states),
         fresh(lambda big, small, act, prev_big, prev_small, tail, _, __: conjp(
             eq(((big, small, act), tail), states),
             eq(((prev_big, prev_small, _), __), tail),
-            zzz(lambda: jugs(tail)),
+            jugs(tail),
             conde(
                 [
                     conde(

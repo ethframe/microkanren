@@ -40,6 +40,13 @@ def zzz(thunk):
     return lambda state: Thunk(lambda: thunk()(state))
 
 
+def delay(fn):
+    @wraps(fn)
+    def _constructor(*args):
+        return lambda state: Thunk(lambda: fn(*args)(state))
+    return _constructor
+
+
 def runp(c, v, *gs):
     return run(c, v, conjp(*gs))
 

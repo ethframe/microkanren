@@ -6,7 +6,7 @@ def typeof(x):
     if isinstance(x, Var):
         return x
     elif isinstance(x, tuple):
-        return tuple(typeof(e) for e in x)
+        return (type(x),) + tuple(map(typeof, x))
     return type(x)
 
 

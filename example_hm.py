@@ -18,9 +18,19 @@ class App(namedtuple("App", "fn arg")):
         return "({!r} {!r})".format(*self)
 
 
+class If(namedtuple("If", "cond t f")):
+    def __repr__(self):
+        return "(if {!r} {!r} {!r})".format(*self)
+
+
 class Let(namedtuple("Let", "id val body")):
     def __repr__(self):
         return "(let ({!r} {!r}) {!r})".format(*self)
+
+
+class Rec(namedtuple("Rec", "id body")):
+    def __repr__(self):
+        return "(rec {!r} {!r})".format(*self)
 
 
 class Sym(namedtuple("Sym", "name")):
@@ -86,6 +96,18 @@ def infer(e, o, t, m):
             infer(b, ((n, TPoly(o, v)), o), t, bm),
             eq(m, Let(Sym(n), v, bm)),
         )),
+        fresh(lambda n, b, bm: conjp(
+            eq(e, Rec(Sym(n), b)),
+            infer(b, ((n, TMono(t)), o), t, bm),
+            eq(m, Rec(Ann(Sym(n), t), bm)),
+        )),
+        fresh(lambda c, cm, a, am, b, bm: conjp(
+            eq(e, If(c, a, b)),
+            infer(c, o, TTerm("bool"), cm),
+            infer(a, o, t, am),
+            infer(b, o, t, bm),
+            eq(m, If(cm, am, bm)),
+        )),
         [eqt(e, int), eq(t, TTerm("int")), eq(m, e)],
         [eqt(e, bool), eq(t, TTerm("bool")), eq(m, e)],
     )
@@ -94,14 +116,26 @@ def infer(e, o, t, m):
 def main():
     env = list_to_pair([
         ("+", TMono(TFunc(TTerm("int"), TFunc(TTerm("int"), TTerm("int"))))),
+        ("-", TMono(TFunc(TTerm("int"), TFunc(TTerm("int"), TTerm("int"))))),
+        ("*", TMono(TFunc(TTerm("int"), TFunc(TTerm("int"), TTerm("int"))))),
+        ("==", TMono(TFunc(TTerm("int"), TFunc(TTerm("int"), TTerm("bool"))))),
         ("bool", TMono(TFunc(TTerm("int"), TTerm("bool")))),
     ])
-    p = Let(
-        Sym("id"),
-        Abs(Sym("x"), Sym("x")),
+    p = Rec(
+        Sym("fac"),
         Abs(
-            Sym("v"),
-            App(Sym("id"), App(Sym("bool"), App(Sym("id"), Sym("v"))))
+            Sym("n"),
+            If(
+                App(App(Sym("=="), Sym("n")), 0),
+                1,
+                App(
+                    App(
+                        Sym("*"),
+                        App(Sym("fac"), App(App(Sym("-"), Sym("n")), 1))
+                    ),
+                    Sym("n")
+                )
+            )
         )
     )
     t = Var()

@@ -64,7 +64,9 @@ def lookup(o, v, x):
         conde(
             [eq(a, v), eq(b, TMono(x))],
             fresh(lambda po, pb, pm: conjp(
-                eq(a, v), eq(b, TPoly(po, pb)), infer(pb, po, x, pm),
+                eq(a, v),
+                eq(b, TPoly(po, pb)),
+                infer(pb, po, x, pm),
             )),
             [neq(a, v), lookup(t, v, x)],
         )
@@ -83,7 +85,7 @@ def infer(e, o, t, m):
             eq(e, App(f, a)),
             infer(a, o, at, aa),
             infer(f, o, TFunc(at, t), fa),
-            eq(m, Ann(App(fa, aa), t)),
+            eq(m, App(fa, aa)),
         )),
         fresh(lambda v, vt, b, bt, ba: conjp(
             eq(e, Abs(Sym(v), b)),

@@ -1,12 +1,8 @@
 class Stream:
-    def defer(self, goal):
-        return Deferred(self, goal)
+    pass
 
 
 class Empty(Stream):
-    def defer(self, goal):
-        return self
-
     def mplus(self, stream):
         return stream
 
@@ -61,15 +57,15 @@ class Thunk(Stream):
 
 
 class Deferred(Stream):
-    def __init__(self, stream, goal):
-        self.stream = stream
+    def __init__(self, state, goal):
+        self.state = state
         self.goal = goal
 
     def mplus(self, stream):
-        return Deferred(Thunk(lambda: self.stream.mplus(stream)), self.goal)
+        return Thunk(lambda: stream.mplus(self))
 
     def bind(self, goal):
-        return Thunk(lambda: self.stream.bind(goal).bind(self.goal))
+        return Thunk(lambda: goal(self.state).bind(self.goal))
 
     def next(self):
         return Empty()

@@ -1,11 +1,13 @@
 from .stream import Cons, Empty
-from .unify import Var, unify
+from .unify import Var, unify, list_as_pairs
 
 
 def typeof(x):
     if isinstance(x, Var):
         return x
-    elif isinstance(x, tuple):
+    if isinstance(x, list):
+        x = list_as_pairs(x)
+    if isinstance(x, tuple):
         return (type(x),) + tuple(map(typeof, x))
     return type(x)
 

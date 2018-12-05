@@ -3,16 +3,15 @@ from mk.disequality import neq
 from mk.unify import Var
 from mk.core import conj, disj, eq
 from mk.ext import call_fresh, conde, conjp, fresh, run, delay
-from mk.list import pair_to_list
 
 
 @delay
 def jugs(states):
     return disj(
-        eq(((0, 0, ""), ()), states),
+        eq([(0, 0, "")], states),
         fresh(lambda big, small, act, prev_big, prev_small, tail, _, __: conjp(
-            eq(((big, small, act), tail), states),
-            eq(((prev_big, prev_small, _), __), tail),
+            eq([(big, small, act), tail, ...], states),
+            eq([(prev_big, prev_small, _), __, ...], tail),
             jugs(tail),
             conde(
                 [
@@ -55,7 +54,7 @@ def main():
     __ = Var()
     for i in range(1, 6):
         p = conjp(
-            eq(((big, small, _), __), states),
+            eq([(big, small, _), __, ...], states),
             disj(
                 eq(big, i),
                 conj(neq(big, i), eq(small, i)),
@@ -64,7 +63,7 @@ def main():
         )
         for answer in run(1, states, p):
             print("{}:".format(i))
-            for b, s, a in reversed(list(pair_to_list(answer))):
+            for b, s, a in reversed(answer):
                 print(b, s, a)
             print()
 

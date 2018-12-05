@@ -1,4 +1,4 @@
-from .stream import Cons, Empty
+from .stream import Cons, Cell, Empty
 from .unify import Var, unify, list_as_pairs
 
 
@@ -14,7 +14,7 @@ def typeof(x):
 
 def apply_constraints(vs, state):
     cons = state[2]
-    stream = Cons(state)
+    stream = Cell(state)
     for v in vs:
         for g in cons.pop(v, ()):
             stream = stream.bind(g)

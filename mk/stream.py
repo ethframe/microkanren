@@ -1,9 +1,12 @@
 class Stream:
-    def defer(self, stream, goal):
-        return self.mplus(Deferred(stream, goal))
+    def defer(self, goal):
+        return Deferred(self, goal)
 
 
 class Empty(Stream):
+    def defer(self, goal):
+        return self
+
     def mplus(self, stream):
         return stream
 
@@ -15,18 +18,32 @@ class Empty(Stream):
 
 
 class Cons(Stream):
-    def __init__(self, head, tail=None):
+    def __init__(self, head, tail):
         self.head = head
-        self.tail = Empty() if tail is None else tail
+        self.tail = tail
 
     def mplus(self, stream):
-        return Cons(self.head, stream.mplus(self.tail))
+        return Cons(self.head, Thunk(lambda: stream.mplus(self.tail)))
 
     def bind(self, goal):
-        return Thunk(lambda: goal(self.head).mplus(self.tail.bind(goal)))
+        return goal(self.head).mplus(Thunk(lambda: self.tail.bind(goal)))
 
     def next(self):
         return self.tail
+
+
+class Cell(Cons):
+    def __init__(self, head):
+        self.head = head
+
+    def mplus(self, stream):
+        return Cons(self.head, stream)
+
+    def bind(self, goal):
+        return goal(self.head)
+
+    def next(self):
+        return Empty()
 
 
 class Thunk(Stream):
@@ -44,24 +61,18 @@ class Thunk(Stream):
 
 
 class Deferred(Stream):
-    def __init__(self, stream, goal, other=None):
+    def __init__(self, stream, goal):
         self.stream = stream
         self.goal = goal
-        self.other = Empty() if other is None else other
 
     def mplus(self, stream):
-        return self.other.mplus(stream).defer(self.stream, self.goal)
+        return Deferred(Thunk(lambda: self.stream.mplus(stream)), self.goal)
 
     def bind(self, goal):
-        return self.other.bind(goal).mplus(
-            self.stream.bind(goal).bind(self.goal)
-        )
+        return Thunk(lambda: self.stream.bind(goal).bind(self.goal))
 
     def next(self):
-        return self.other.next().mplus(self.stream.bind(self.goal))
-
-    def defer(self, stream, goal):
-        return Deferred(stream, goal, self)
+        return Empty()
 
 
 def unfold(stream):

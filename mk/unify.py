@@ -2,7 +2,7 @@ from collections import namedtuple
 
 
 class Var:
-    pass
+    __slots__ = ()
 
 
 null = object()
@@ -10,10 +10,11 @@ Pair = namedtuple("Pair", "car cdr")
 
 
 def walk(v, subst):
-    while isinstance(v, Var):
-        u = subst.get(v)
+    get = subst.get
+    while type(v) is Var:
+        u = get(v)
         if u is None:
-            break
+            return v
         v = u
     return v
 
@@ -59,9 +60,9 @@ def unify(u, v, subst, list=list):
         u = list_as_pairs(u)
     if isinstance(v, list):
         v = list_as_pairs(v)
-    if isinstance(u, Var):
+    if type(u) is Var:
         return [] if u is v else assoc(u, v, subst)
-    if isinstance(v, Var):
+    if type(v) is Var:
         return assoc(v, u, subst)
     if isinstance(u, tuple) and isinstance(v, tuple) and len(u) == len(v):
         if type(u) is not type(v):

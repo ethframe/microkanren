@@ -4,6 +4,13 @@ from mk.unify import Var
 from mk.core import conj, disj, eq
 from mk.ext import call_fresh, conde, conjp, fresh, run, delay
 
+# BIG = 5
+# SMALL = 3
+
+
+BIG = 9
+SMALL = 4
+
 
 @delay
 def jugs(states):
@@ -12,13 +19,12 @@ def jugs(states):
         fresh(lambda big, small, act, prev_big, prev_small, tail, _, __: conjp(
             eq([(big, small, act), tail, ...], states),
             eq([(prev_big, prev_small, _), __, ...], tail),
-            jugs(tail),
             conde(
                 [
                     conde(
                         [
                             conde(
-                                [eq(big, 5), eq(act, "fill big")],
+                                [eq(big, BIG), eq(act, "fill big")],
                                 [eq(big, 0), eq(act, "empty big")]),
                             eq(small, prev_small)],
                         [
@@ -27,22 +33,23 @@ def jugs(states):
                                     add(big, small, total),
                                     add(prev_big, prev_small, total),
                                     conde(
-                                        [eq(big, 5), eq(act, "to big")],
-                                        [eq(small, 3), eq(act, "to small")],
+                                        [eq(big, BIG), eq(act, "to big")],
+                                        [eq(small, SMALL), eq(act, "to small")],
                                         [
-                                            eq(small, 0), neq(big, 5),
+                                            eq(small, 0), neq(big, BIG),
                                             eq(act, "to big")],
                                         [
-                                            eq(big, 0), neq(small, 3),
+                                            eq(big, 0), neq(small, SMALL),
                                             eq(act, "to small")])))]),
                     neq(big, prev_big)],
                 [
                     conde(
-                        [eq(small, 3), eq(act, "fill small")],
+                        [eq(small, SMALL), eq(act, "fill small")],
                         [eq(small, 0), eq(act, "empty small")]),
                     neq(small, prev_small), eq(big, prev_big)]),
-            gte(big, 0), lte(big, 5),
-            gte(small, 0), lte(small, 3)
+            gte(big, 0), lte(big, BIG),
+            gte(small, 0), lte(small, SMALL),
+            jugs(tail),
         )))
 
 
@@ -52,7 +59,7 @@ def main():
     small = Var()
     _ = Var()
     __ = Var()
-    for i in range(1, 6):
+    for i in range(1, BIG + 1):
         p = conjp(
             eq([(big, small, _), __, ...], states),
             disj(

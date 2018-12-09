@@ -86,10 +86,18 @@ def eval_exp(exp, env, val):
     )
 
 
+def format_sexpr(s):
+    if isinstance(s, list):
+        if len(s) == 2 and s[0] == Symbol("quote"):
+            return "'" + format_sexpr(s[1])
+        return "({})".format(" ".join(format_sexpr(e) for e in s))
+    return repr(s)
+
+
 def main():
     q = Var()
     for s in run(5, q, eval_exp(q, (), q)):
-        print(pair_to_list(s, True))
+        print(format_sexpr(pair_to_list(s, True)))
 
 
 if __name__ == '__main__':

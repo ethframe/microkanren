@@ -1,5 +1,5 @@
 from .core import typeof
-from .stream import Cons, Cell, Empty
+from .stream import Cell, Empty
 from .unify import unify
 
 

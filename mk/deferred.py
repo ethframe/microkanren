@@ -1,13 +1,14 @@
-from .stream import Cell, Deferred, Empty
+from .stream import Cell, Empty
 from .unify import Var, walk
 
 
 def predicate(a, p):
     def _goal(state):
-        subst = state[0]
+        subst, _, cons = state
         wa = walk(a, subst)
-        if isinstance(wa, Var):
-            return Deferred(state, _goal)
+        if type(wa) is Var:
+            cons.setdefault(wa, []).append(_goal)
+            return Cell(state)
         return Cell(state) if p(wa) else Empty()
     return _goal
 
@@ -18,11 +19,15 @@ def make_predicate(p):
 
 def relation(a, b, p):
     def _goal(state):
-        subst = state[0]
+        subst, _, cons = state
         wa = walk(a, subst)
+        if type(wa) is Var:
+            cons.setdefault(wa, []).append(_goal)
+            return Cell(state)
         wb = walk(b, subst)
-        if isinstance(wa, Var) or isinstance(wb, Var):
-            return Deferred(state, _goal)
+        if type(wb) is Var:
+            cons.setdefault(wb, []).append(_goal)
+            return Cell(state)
         return Cell(state) if p(wa, wb) else Empty()
     return _goal
 

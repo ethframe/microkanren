@@ -2,7 +2,7 @@ from collections import defaultdict
 from itertools import count, islice
 
 from .stream import unfold
-from .unify import Var, Pair, walk, null
+from .unify import Var, Pair, walk, null, pairs_as_list
 
 
 class ReifiedVar:

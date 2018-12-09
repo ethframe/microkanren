@@ -43,6 +43,8 @@ class Cell(Cons):
 
 
 class Thunk(Stream):
+    __slots__ = ("thunk",)
+
     def __init__(self, thunk):
         self.thunk = thunk
 
@@ -56,23 +58,10 @@ class Thunk(Stream):
         return self.thunk()
 
 
-class Deferred(Stream):
-    def __init__(self, state, goal):
-        self.state = state
-        self.goal = goal
-
-    def mplus(self, stream):
-        return Thunk(lambda: stream.mplus(self))
-
-    def bind(self, goal):
-        return Thunk(lambda: goal(self.state).bind(self.goal))
-
-    def next(self):
-        return Empty()
-
-
 def unfold(stream):
-    while not isinstance(stream, Empty):
-        if isinstance(stream, Cons):
+    while type(stream) is not Empty:
+        while type(stream) is Thunk:
+            stream = stream.next()
+        while type(stream) in (Cons, Cell):
             yield stream.head
-        stream = stream.next()
+            stream = stream.next()

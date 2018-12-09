@@ -1,4 +1,4 @@
-from .stream import Cons, Cell, Empty
+from .stream import Cell, Empty
 from .unify import Var, unify, list_as_pairs
 
 

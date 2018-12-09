@@ -45,9 +45,18 @@ def eqt(u, v):
     return _goal
 
 
+class ListDict(dict):
+    def __missing__(self, item):
+        ls = self[item] = []
+        return ls
+
+    def copy(self):
+        return ListDict((k, v.copy()) for k, v in self.items())
+
+
 def copy(state):
     subst, types, cons = state
-    return subst.copy(), types.copy(), {v: cs.copy() for v, cs in cons.items()}
+    return subst.copy(), types.copy(), cons.copy()
 
 
 def disj(g1, g2):

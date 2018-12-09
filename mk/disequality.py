@@ -14,7 +14,7 @@ def neq(u, v):
             return Cell(state)
         if not (a or b):
             return Empty()
-        cons.setdefault(a[0], []).append(_goal)
+        cons[a[0]].append(_goal)
         return Cell(state)
     return _goal
 
@@ -27,6 +27,6 @@ def neqt(v, t):
             return Cell(state)
         if not a:
             return Empty()
-        cons.setdefault(a[0], []).append(_goal)
+        cons[a[0]].append(_goal)
         return Cell(state)
     return _goal

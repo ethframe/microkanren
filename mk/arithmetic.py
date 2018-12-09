@@ -10,20 +10,20 @@ def add(goal, state, a, b, c):
     if type(a) is Var:
         if type(b) is Var:
             cons = state[2]
-            cons.setdefault(a, []).append(goal)
-            cons.setdefault(b, []).append(goal)
+            cons[a].append(goal)
+            cons[b].append(goal)
             return Cell(state)
         if type(c) is Var:
             cons = state[2]
-            cons.setdefault(a, []).append(goal)
-            cons.setdefault(c, []).append(goal)
+            cons[a].append(goal)
+            cons[c].append(goal)
             return Cell(state)
         return do_eq(a, c - b, state)
     if type(b) is Var:
         if type(c) is Var:
             cons = state[2]
-            cons.setdefault(b, []).append(goal)
-            cons.setdefault(c, []).append(goal)
+            cons[b].append(goal)
+            cons[c].append(goal)
             return Cell(state)
         return do_eq(b, c - a, state)
     return do_eq(c, a + b, state)
@@ -38,13 +38,13 @@ def mul(goal, state, a, b, c):
     if type(a) is Var:
         if type(b) is Var:
             cons = state[2]
-            cons.setdefault(a, []).append(goal)
-            cons.setdefault(b, []).append(goal)
+            cons[a].append(goal)
+            cons[b].append(goal)
             return Cell(state)
         if type(c) is Var:
             cons = state[2]
-            cons.setdefault(a, []).append(goal)
-            cons.setdefault(c, []).append(goal)
+            cons[a].append(goal)
+            cons[c].append(goal)
             return Cell(state)
         if b == 0:
             return Cell(state) if c == 0 else Empty()
@@ -53,8 +53,8 @@ def mul(goal, state, a, b, c):
     if type(b) is Var:
         if type(c) is Var:
             cons = state[2]
-            cons.setdefault(b, []).append(goal)
-            cons.setdefault(c, []).append(goal)
+            cons[b].append(goal)
+            cons[c].append(goal)
             return Cell(state)
         if a == 0:
             return Cell(state) if c == 0 else Empty()

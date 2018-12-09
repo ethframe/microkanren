@@ -7,7 +7,7 @@ def predicate(a, p):
         subst, _, cons = state
         wa = walk(a, subst)
         if type(wa) is Var:
-            cons.setdefault(wa, []).append(_goal)
+            cons[wa].append(_goal)
             return Cell(state)
         return Cell(state) if p(wa) else Empty()
     return _goal
@@ -22,11 +22,11 @@ def relation(a, b, p):
         subst, _, cons = state
         wa = walk(a, subst)
         if type(wa) is Var:
-            cons.setdefault(wa, []).append(_goal)
+            cons[wa].append(_goal)
             return Cell(state)
         wb = walk(b, subst)
         if type(wb) is Var:
-            cons.setdefault(wb, []).append(_goal)
+            cons[wb].append(_goal)
             return Cell(state)
         return Cell(state) if p(wa, wb) else Empty()
     return _goal

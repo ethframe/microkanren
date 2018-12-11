@@ -12,10 +12,10 @@ def neq(u, v):
         b = unify(typeof(u), typeof(v), types.copy())
         if b is None:
             return Cell(state)
-        if not (a or b):
-            return Empty()
-        cons[a[0]].append(_goal)
-        return Cell(state)
+        if a:
+            cons[a[0]].append(_goal)
+            return Cell(state)
+        return Empty()
     return _goal
 
 

@@ -1,8 +1,8 @@
-from mk.core import eq, eqt, disj, conj, Var
+from mk.core import eq, eqt, disj, conj
+from mk.unify import Var
 from mk.run import run
 from mk.ext import disjp, conjp, conde, fresh, delay
 from mk.disequality import neq
-from mk.list import pair_to_list
 
 
 class Symbol(str):
@@ -42,11 +42,11 @@ def missing(x, env):
 @delay
 def proper(exp, env, val):
     return conde(
-        [eq((), exp), eq((), val)],
+        [eq([], exp), eq([], val)],
         [
             fresh(lambda a, d, ta, td: conjp(
-                eq((a, d), exp),
-                eq((ta, td), val),
+                eq([a, d, ...], exp),
+                eq([ta, td, ...], val),
                 eval_exp(a, env, ta),
                 proper(d, env, td)
             ))
@@ -58,12 +58,12 @@ def proper(exp, env, val):
 def eval_exp(exp, env, val):
     return disjp(
         fresh(lambda v: conjp(
-            eq((Symbol("quote"), (v, ())), exp),
+            eq([Symbol("quote"), v], exp),
             missing(Symbol("quote"), env),
             eq(v, val),
         )),
         fresh(lambda ap: conjp(
-            eq((Symbol("list"), ap), exp),
+            eq([Symbol("list"), ap, ...], exp),
             missing(Symbol("list"), env),
             proper(ap, env, val),
         )),
@@ -72,13 +72,13 @@ def eval_exp(exp, env, val):
             lookup(exp, env, val),
         ),
         fresh(lambda rator, rand, x, body, envc, a: conjp(
-            eq((rator, (rand, ())), exp),
+            eq([rator, rand], exp),
             eval_exp(rator, env, (closure, x, body, envc)),
             eval_exp(rand, env, a),
             eval_exp(body, ((x, a), envc), val)
         )),
         fresh(lambda x, body: conjp(
-            eq((Symbol("lambda"), ((x, ()), (body, ()))), exp),
+            eq([Symbol("lambda"), [x], body], exp),
             eqt(x, Symbol),
             missing(Symbol("lambda"), env),
             eq((closure, x, body, env), val)
@@ -97,7 +97,7 @@ def format_sexpr(s):
 def main():
     q = Var()
     for s in run(5, q, eval_exp(q, (), q)):
-        print(format_sexpr(pair_to_list(s, True)))
+        print(format_sexpr(s))
 
 
 if __name__ == '__main__':

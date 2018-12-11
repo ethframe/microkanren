@@ -3,7 +3,7 @@ from itertools import count, islice
 
 from .stream import unfold
 from .unify import Var, Pair, walk, null, pairs_as_list
-from .core import ListDict
+from .core import WatchList
 
 
 class ReifiedVar:
@@ -55,7 +55,7 @@ def reify(v, state):
 
 
 def initial():
-    return {}, {}, ListDict()
+    return {}, {}, WatchList()
 
 
 def run(c, v, g):

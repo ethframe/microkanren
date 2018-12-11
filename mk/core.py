@@ -45,13 +45,13 @@ def eqt(u, v):
     return _goal
 
 
-class ListDict(dict):
+class WatchList(dict):
     def __missing__(self, item):
         ls = self[item] = []
         return ls
 
     def copy(self):
-        return ListDict((k, v.copy()) for k, v in self.items())
+        return WatchList((k, v.copy()) for k, v in self.items())
 
 
 def copy(state):

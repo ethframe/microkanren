@@ -10,9 +10,8 @@ Pair = namedtuple("Pair", "car cdr")
 
 
 def walk(v, subst):
-    get = subst.get
     while type(v) is Var:
-        u = get(v)
+        u = subst.get(v)
         if u is None:
             return v
         v = u
@@ -21,7 +20,10 @@ def walk(v, subst):
 
 def occurs(v, x, subst):
     if isinstance(x, tuple):
-        return any(occurs(v, walk(e, subst), subst) for e in x)
+        for e in x:
+            if occurs(v, walk(e, subst), subst):
+                return True
+        return False
     return v is x
 
 
@@ -56,12 +58,12 @@ def pairs_as_list(p):
 def unify(u, v, subst, list=list):
     u = walk(u, subst)
     v = walk(v, subst)
-    if isinstance(u, list):
-        u = list_as_pairs(u)
-    if isinstance(v, list):
+    if type(v) is list:
         v = list_as_pairs(v)
     if type(u) is Var:
         return [] if u is v else assoc(u, v, subst)
+    if type(u) is list:
+        u = list_as_pairs(u)
     if type(v) is Var:
         return assoc(v, u, subst)
     if isinstance(u, tuple) and isinstance(v, tuple) and len(u) == len(v):

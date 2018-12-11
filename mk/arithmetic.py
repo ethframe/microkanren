@@ -1,8 +1,8 @@
+from .core import do_eq
 from .deferred import make_relation
+from .ext import walk_args
 from .stream import Cell, Empty
 from .unify import Var
-from .core import do_eq
-from .ext import walk_args
 
 
 @walk_args
@@ -47,9 +47,13 @@ def mul(goal, state, a, b, c):
             cons[c].append(goal)
             return Cell(state)
         if b == 0:
-            return Cell(state) if c == 0 else Empty()
+            if c == 0:
+                return Cell(state)
+            return Empty()
         q, r = divmod(c, b)
-        return do_eq(a, q, state) if r == 0 else Empty()
+        if r == 0:
+            return do_eq(a, q, state)
+        return Empty()
     if type(b) is Var:
         if type(c) is Var:
             cons = state[2]
@@ -57,9 +61,13 @@ def mul(goal, state, a, b, c):
             cons[c].append(goal)
             return Cell(state)
         if a == 0:
-            return Cell(state) if c == 0 else Empty()
+            if c == 0:
+                return Cell(state)
+            return Empty()
         q, r = divmod(c, a)
-        return do_eq(b, q, state) if r == 0 else Empty()
+        if r == 0:
+            return do_eq(b, q, state)
+        return Empty()
     return do_eq(c, a * b, state)
 
 

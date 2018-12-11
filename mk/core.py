@@ -1,5 +1,5 @@
 from .stream import Cell, Empty
-from .unify import Var, unify, list_as_pairs
+from .unify import Var, list_as_pairs, unify
 
 
 def typeof(x):

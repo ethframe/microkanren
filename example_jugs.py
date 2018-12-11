@@ -1,8 +1,8 @@
 from mk.arithmetic import add, gte, lte
-from mk.disequality import neq
-from mk.unify import Var
 from mk.core import conj, disj, eq
-from mk.ext import call_fresh, conde, conjp, fresh, run, delay
+from mk.disequality import neq
+from mk.ext import call_fresh, conde, conjp, delay, fresh, run
+from mk.unify import Var
 
 # BIG = 5
 # SMALL = 3

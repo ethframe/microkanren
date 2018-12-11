@@ -61,7 +61,9 @@ def unify(u, v, subst, list=list):
     if type(v) is list:
         v = list_as_pairs(v)
     if type(u) is Var:
-        return [] if u is v else assoc(u, v, subst)
+        if u is v:
+            return []
+        return assoc(u, v, subst)
     if type(u) is list:
         u = list_as_pairs(u)
     if type(v) is Var:
@@ -76,4 +78,6 @@ def unify(u, v, subst, list=list):
                 return None
             a.extend(e)
         return a
-    return [] if u == v else None
+    if u == v:
+        return []
+    return None

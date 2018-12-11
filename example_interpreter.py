@@ -1,8 +1,8 @@
-from mk.core import eq, eqt, disj, conj
-from mk.unify import Var
-from mk.run import run
-from mk.ext import disjp, conjp, conde, fresh, delay
+from mk.core import conj, disj, eq, eqt
 from mk.disequality import neq
+from mk.ext import conde, conjp, delay, disjp, fresh
+from mk.run import run
+from mk.unify import Var
 
 
 class Symbol(str):

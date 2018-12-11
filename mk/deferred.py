@@ -9,7 +9,9 @@ def predicate(a, p):
         if type(wa) is Var:
             cons[wa].append(_goal)
             return Cell(state)
-        return Cell(state) if p(wa) else Empty()
+        if p(wa):
+            return Cell(state)
+        return Empty()
     return _goal
 
 
@@ -28,7 +30,9 @@ def relation(a, b, p):
         if type(wb) is Var:
             cons[wb].append(_goal)
             return Cell(state)
-        return Cell(state) if p(wa, wb) else Empty()
+        if p(wa, wb):
+            return Cell(state)
+        return Empty()
     return _goal
 
 

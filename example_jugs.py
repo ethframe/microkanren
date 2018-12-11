@@ -1,7 +1,7 @@
 from mk.arithmetic import add, gte, lte
 from mk.core import conj, disj, eq
 from mk.disequality import neq
-from mk.ext import call_fresh, conde, conjp, delay, fresh, run
+from mk.ext import conde, conjp, delay, fresh, run
 from mk.unify import Var
 
 # BIG = 5
@@ -16,41 +16,43 @@ SMALL = 4
 def jugs(states):
     return disj(
         eq([(0, 0, "")], states),
-        fresh(lambda big, small, act, prev_big, prev_small, tail, _, __: conjp(
-            eq([(big, small, act), tail, ...], states),
-            eq([(prev_big, prev_small, _), __, ...], tail),
-            conde(
-                [
-                    conde(
-                        [
-                            conde(
-                                [eq(big, BIG), eq(act, "fill big")],
-                                [eq(big, 0), eq(act, "empty big")]),
-                            eq(small, prev_small)],
-                        [
-                            call_fresh(
-                                lambda total: conjp(
-                                    add(big, small, total),
-                                    add(prev_big, prev_small, total),
-                                    conde(
-                                        [eq(big, BIG), eq(act, "to big")],
-                                        [eq(small, SMALL), eq(act, "to small")],
-                                        [
-                                            eq(small, 0), neq(big, BIG),
-                                            eq(act, "to big")],
-                                        [
-                                            eq(big, 0), neq(small, SMALL),
-                                            eq(act, "to small")])))]),
-                    neq(big, prev_big)],
-                [
-                    conde(
-                        [eq(small, SMALL), eq(act, "fill small")],
-                        [eq(small, 0), eq(act, "empty small")]),
-                    neq(small, prev_small), eq(big, prev_big)]),
-            gte(big, 0), lte(big, BIG),
-            gte(small, 0), lte(small, SMALL),
-            jugs(tail),
-        )))
+        fresh[8](
+            lambda big, small, act, prev_big, prev_small, tail, _, __: conjp(
+                eq([(big, small, act), tail, ...], states),
+                eq([(prev_big, prev_small, _), __, ...], tail),
+                conde(
+                    [
+                        conde(
+                            [
+                                conde(
+                                    [eq(big, BIG), eq(act, "fill big")],
+                                    [eq(big, 0), eq(act, "empty big")]),
+                                eq(small, prev_small)],
+                            [
+                                fresh(
+                                    lambda total: conjp(
+                                        add(big, small, total),
+                                        add(prev_big, prev_small, total),
+                                        conde(
+                                            [eq(big, BIG), eq(act, "to big")],
+                                            [eq(small, SMALL), eq(
+                                                act, "to small")],
+                                            [
+                                                eq(small, 0), neq(big, BIG),
+                                                eq(act, "to big")],
+                                            [
+                                                eq(big, 0), neq(small, SMALL),
+                                                eq(act, "to small")])))]),
+                        neq(big, prev_big)],
+                    [
+                        conde(
+                            [eq(small, SMALL), eq(act, "fill small")],
+                            [eq(small, 0), eq(act, "empty small")]),
+                        neq(small, prev_small), eq(big, prev_big)]),
+                gte(big, 0), lte(big, BIG),
+                gte(small, 0), lte(small, SMALL),
+                jugs(tail),
+            )))
 
 
 def main():

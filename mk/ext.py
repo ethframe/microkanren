@@ -1,4 +1,3 @@
-import inspect
 from functools import reduce, wraps
 
 from .core import copy
@@ -7,8 +6,22 @@ from .stream import Thunk
 from .unify import Var, walk
 
 
-def call_fresh(fn):
-    return lambda s: fn(Var())(s)
+class _Fresh:
+    __slots__ = ("nargs",)
+
+    def __init__(self, nargs):
+        self.nargs = nargs
+
+    def __call__(self, fn):
+        return fn(*(Var() for _ in range(self.nargs)))
+
+    def __getitem__(self, nargs):
+        if nargs < 1:
+            raise ValueError()
+        return _Fresh(nargs)
+
+
+fresh = _Fresh(1)
 
 
 def conjp(g, *gs):
@@ -25,17 +38,6 @@ def disjp(g, *gs):
 
 def conde(*ggs):
     return disjp(*(gs if callable(gs) else conjp(*gs) for gs in ggs))
-
-
-def fresh(fn):
-    sig = inspect.signature(fn)
-    if not all(
-        p.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
-        for p in sig.parameters.values()
-    ):
-        raise ValueError(fn)
-    n = len(sig.parameters)
-    return lambda s: fn(*(Var() for _ in range(n)))(s)
 
 
 def zzz(thunk):

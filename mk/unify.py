@@ -55,6 +55,16 @@ def pairs_as_list(p):
     return x
 
 
+def typeof(x):
+    if type(x) is Var:
+        return x
+    if type(x) is list:
+        x = list_as_pairs(x)
+    if isinstance(x, tuple):
+        return (type(x),) + tuple(typeof(i) for i in x)
+    return type(x)
+
+
 def unify(u, v, subst, list=list):
     u = walk(u, subst)
     v = walk(v, subst)

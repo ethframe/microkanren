@@ -1,6 +1,5 @@
-from .core import typeof
 from .stream import Cell, Empty
-from .unify import unify
+from .unify import typeof, unify
 
 
 def neq(u, v):

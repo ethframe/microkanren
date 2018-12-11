@@ -1,15 +1,5 @@
 from .stream import Cell, Empty
-from .unify import Var, list_as_pairs, unify
-
-
-def typeof(x):
-    if isinstance(x, Var):
-        return x
-    if isinstance(x, list):
-        x = list_as_pairs(x)
-    if isinstance(x, tuple):
-        return (type(x),) + tuple(map(typeof, x))
-    return type(x)
+from .unify import typeof, unify
 
 
 def apply_constraints(vs, state):

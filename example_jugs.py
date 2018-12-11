@@ -35,8 +35,9 @@ def jugs(states):
                                         add(prev_big, prev_small, total),
                                         conde(
                                             [eq(big, BIG), eq(act, "to big")],
-                                            [eq(small, SMALL), eq(
-                                                act, "to small")],
+                                            [
+                                                eq(small, SMALL),
+                                                eq(act, "to small")],
                                             [
                                                 eq(small, 0), neq(big, BIG),
                                                 eq(act, "to big")],

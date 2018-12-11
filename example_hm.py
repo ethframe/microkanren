@@ -3,7 +3,6 @@ from collections import namedtuple
 from mk.core import conj, eq, eqt
 from mk.disequality import neq
 from mk.ext import conde, conjp, delay, fresh
-from mk.list import list_to_pair
 from mk.run import run
 from mk.unify import Var
 
@@ -74,49 +73,56 @@ def lookup(o, v, x):
 
 
 @delay
-def infer(e, o, t, m):
+def infer(expr, env, typ, ann):
     return conde(
         fresh(lambda n: conjp(
-            eq(e, Sym(n)),
-            lookup(o, n, t),
-            eq(m, Ann(e, t)),
+            eq(expr, Sym(n)),
+            lookup(env, n, typ),
+            eq(ann, Ann(expr, typ)),
         )),
         fresh(lambda f, ft, fa, a, at, aa: conjp(
-            eq(e, App(f, a)),
-            infer(a, o, at, aa),
-            infer(f, o, TFunc(at, t), fa),
-            eq(m, App(fa, aa)),
+            eq(expr, App(f, a)),
+            infer(a, env, at, aa),
+            infer(f, env, TFunc(at, typ), fa),
+            eq(ann, App(fa, aa)),
         )),
         fresh(lambda v, vt, b, bt, ba: conjp(
-            eq(e, Abs(Sym(v), b)),
-            infer(b, ((v, TMono(vt)), o), bt, ba),
-            eq(t, TFunc(vt, bt)),
-            eq(m, Abs(Ann(Sym(v), vt), ba)),
+            eq(expr, Abs(Sym(v), b)),
+            infer(b, ((v, TMono(vt)), env), bt, ba),
+            eq(typ, TFunc(vt, bt)),
+            eq(ann, Abs(Ann(Sym(v), vt), ba)),
         )),
         fresh(lambda n, v, b, bm: conjp(
-            eq(e, Let(Sym(n), v, b)),
-            infer(b, ((n, TPoly(o, v)), o), t, bm),
-            eq(m, Let(Sym(n), v, bm)),
+            eq(expr, Let(Sym(n), v, b)),
+            infer(b, ((n, TPoly(env, v)), env), typ, bm),
+            eq(ann, Let(Sym(n), v, bm)),
         )),
         fresh(lambda n, b, bm: conjp(
-            eq(e, Rec(Sym(n), b)),
-            infer(b, ((n, TMono(t)), o), t, bm),
-            eq(m, Rec(Ann(Sym(n), t), bm)),
+            eq(expr, Rec(Sym(n), b)),
+            infer(b, ((n, TMono(typ)), env), typ, bm),
+            eq(ann, Rec(Ann(Sym(n), typ), bm)),
         )),
         fresh(lambda c, cm, a, am, b, bm: conjp(
-            eq(e, If(c, a, b)),
-            infer(c, o, TTerm("bool"), cm),
-            infer(a, o, t, am),
-            infer(b, o, t, bm),
-            eq(m, If(cm, am, bm)),
+            eq(expr, If(c, a, b)),
+            infer(c, env, TTerm("bool"), cm),
+            infer(a, env, typ, am),
+            infer(b, env, typ, bm),
+            eq(ann, If(cm, am, bm)),
         )),
-        [eqt(e, int), eq(t, TTerm("int")), eq(m, e)],
-        [eqt(e, bool), eq(t, TTerm("bool")), eq(m, e)],
+        [eqt(expr, int), eq(typ, TTerm("int")), eq(ann, expr)],
+        [eqt(expr, bool), eq(typ, TTerm("bool")), eq(ann, expr)],
     )
 
 
+def list_to_tuples(lst):
+    tup = ()
+    for e in reversed(lst):
+        tup = (e, tup)
+    return tup
+
+
 def main():
-    env = list_to_pair([
+    env = list_to_tuples([
         ("+", TMono(TFunc(TTerm("int"), TFunc(TTerm("int"), TTerm("int"))))),
         ("-", TMono(TFunc(TTerm("int"), TFunc(TTerm("int"), TTerm("int"))))),
         ("*", TMono(TFunc(TTerm("int"), TFunc(TTerm("int"), TTerm("int"))))),

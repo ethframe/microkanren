@@ -1,4 +1,4 @@
-from .stream import Cell, Empty
+from .stream import MZero, Unit
 from .unify import typeof, unify
 
 
@@ -7,14 +7,13 @@ def neq(u, v):
         subst, types, cons = state
         a = unify(u, v, subst.copy())
         if a is None:
-            return Cell(state)
-        b = unify(typeof(u), typeof(v), types.copy())
-        if b is None:
-            return Cell(state)
-        if a:
-            cons[a[0]].append(_goal)
-            return Cell(state)
-        return Empty()
+            return Unit(state)
+        if not a:
+            return MZero()
+        if unify(typeof(u), typeof(v), types.copy()) is None:
+            return Unit(state)
+        cons[a[0]].append(_goal)
+        return Unit(state)
     return _goal
 
 
@@ -23,9 +22,9 @@ def neqt(v, t):
         subst, types, cons = state
         a = unify(typeof(v), t, types.copy())
         if a is None:
-            return Cell(state)
+            return Unit(state)
         if not a:
-            return Empty()
+            return MZero()
         cons[a[0]].append(_goal)
-        return Cell(state)
+        return Unit(state)
     return _goal

@@ -1,8 +1,4 @@
-class Stream:
-    pass
-
-
-class Empty(Stream):
+class MZero:
     def mplus(self, stream):
         return stream
 
@@ -13,7 +9,7 @@ class Empty(Stream):
         return self
 
 
-class Cons(Stream):
+class Cons:
     def __init__(self, head, tail):
         self.head = head
         self.tail = tail
@@ -28,7 +24,7 @@ class Cons(Stream):
         return self.tail
 
 
-class Cell(Cons):
+class Unit:
     def __init__(self, head):
         self.head = head
 
@@ -39,10 +35,10 @@ class Cell(Cons):
         return goal(self.head)
 
     def next(self):
-        return Empty()
+        return MZero()
 
 
-class Thunk(Stream):
+class Thunk:
     __slots__ = ("thunk",)
 
     def __init__(self, thunk):
@@ -59,9 +55,9 @@ class Thunk(Stream):
 
 
 def unfold(stream):
-    while type(stream) is not Empty:
+    while type(stream) is not MZero:
         while type(stream) is Thunk:
             stream = stream.next()
-        while type(stream) in (Cons, Cell):
+        while type(stream) in (Cons, Unit):
             yield stream.head
             stream = stream.next()

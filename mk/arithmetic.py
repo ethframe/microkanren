@@ -1,7 +1,7 @@
 from .core import do_eq
 from .deferred import make_relation
 from .ext import walk_args
-from .stream import Cell, Empty
+from .stream import MZero, Unit
 from .unify import Var
 
 
@@ -12,19 +12,19 @@ def add(goal, state, a, b, c):
             cons = state[2]
             cons[a].append(goal)
             cons[b].append(goal)
-            return Cell(state)
+            return Unit(state)
         if type(c) is Var:
             cons = state[2]
             cons[a].append(goal)
             cons[c].append(goal)
-            return Cell(state)
+            return Unit(state)
         return do_eq(a, c - b, state)
     if type(b) is Var:
         if type(c) is Var:
             cons = state[2]
             cons[b].append(goal)
             cons[c].append(goal)
-            return Cell(state)
+            return Unit(state)
         return do_eq(b, c - a, state)
     return do_eq(c, a + b, state)
 
@@ -40,34 +40,34 @@ def mul(goal, state, a, b, c):
             cons = state[2]
             cons[a].append(goal)
             cons[b].append(goal)
-            return Cell(state)
+            return Unit(state)
         if type(c) is Var:
             cons = state[2]
             cons[a].append(goal)
             cons[c].append(goal)
-            return Cell(state)
+            return Unit(state)
         if b == 0:
             if c == 0:
-                return Cell(state)
-            return Empty()
+                return Unit(state)
+            return MZero()
         q, r = divmod(c, b)
         if r == 0:
             return do_eq(a, q, state)
-        return Empty()
+        return MZero()
     if type(b) is Var:
         if type(c) is Var:
             cons = state[2]
             cons[b].append(goal)
             cons[c].append(goal)
-            return Cell(state)
+            return Unit(state)
         if a == 0:
             if c == 0:
-                return Cell(state)
-            return Empty()
+                return Unit(state)
+            return MZero()
         q, r = divmod(c, a)
         if r == 0:
             return do_eq(b, q, state)
-        return Empty()
+        return MZero()
     return do_eq(c, a * b, state)
 
 

@@ -1,4 +1,4 @@
-from .stream import Cell, Empty
+from .stream import MZero, Unit
 from .unify import Var, walk
 
 
@@ -8,10 +8,10 @@ def predicate(a, p):
         wa = walk(a, subst)
         if type(wa) is Var:
             cons[wa].append(_goal)
-            return Cell(state)
+            return Unit(state)
         if p(wa):
-            return Cell(state)
-        return Empty()
+            return Unit(state)
+        return MZero()
     return _goal
 
 
@@ -25,14 +25,14 @@ def relation(a, b, p):
         wa = walk(a, subst)
         if type(wa) is Var:
             cons[wa].append(_goal)
-            return Cell(state)
+            return Unit(state)
         wb = walk(b, subst)
         if type(wb) is Var:
             cons[wb].append(_goal)
-            return Cell(state)
+            return Unit(state)
         if p(wa, wb):
-            return Cell(state)
-        return Empty()
+            return Unit(state)
+        return MZero()
     return _goal
 
 

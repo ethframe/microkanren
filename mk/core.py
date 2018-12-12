@@ -1,10 +1,10 @@
-from .stream import Cell, Empty
+from .stream import MZero, Unit
 from .unify import typeof, unify
 
 
 def apply_constraints(vs, state):
     cons = state[2]
-    stream = Cell(state)
+    stream = Unit(state)
     for v in vs:
         for g in cons.pop(v, ()):
             stream = stream.bind(g)
@@ -15,9 +15,9 @@ def do_eq(u, v, state):
     subst, types, cons = state
     a = unify(u, v, subst)
     if a is None:
-        return Empty()
+        return MZero()
     if unify(typeof(u), typeof(v), types) is None:
-        return Empty()
+        return MZero()
     return apply_constraints(a, state)
 
 
@@ -30,7 +30,7 @@ def eqt(u, v):
         subst, types, cons = state
         a = unify(typeof(u), v, types)
         if a is None:
-            return Empty()
+            return MZero()
         return apply_constraints(a, state)
     return _goal
 

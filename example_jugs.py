@@ -24,15 +24,13 @@ def jugs(states):
                     [
                         conde(
                             [
+                                eq(small, prev_small),
                                 conde(
                                     [eq(big, BIG), eq(act, "fill big")],
-                                    [eq(big, 0), eq(act, "empty big")]),
-                                eq(small, prev_small)],
+                                    [eq(big, 0), eq(act, "empty big")])],
                             [
                                 fresh(
                                     lambda total: conjp(
-                                        add(big, small, total),
-                                        add(prev_big, prev_small, total),
                                         conde(
                                             [eq(big, BIG), eq(act, "to big")],
                                             [
@@ -43,13 +41,16 @@ def jugs(states):
                                                 eq(act, "to big")],
                                             [
                                                 eq(big, 0), neq(small, SMALL),
-                                                eq(act, "to small")])))]),
+                                                eq(act, "to small")]),
+                                        add(big, small, total),
+                                        add(prev_big, prev_small, total)))]),
                         neq(big, prev_big)],
                     [
+                        eq(big, prev_big),
                         conde(
                             [eq(small, SMALL), eq(act, "fill small")],
                             [eq(small, 0), eq(act, "empty small")]),
-                        neq(small, prev_small), eq(big, prev_big)]),
+                        neq(small, prev_small)]),
                 gte(big, 0), lte(big, BIG),
                 gte(small, 0), lte(small, SMALL),
                 jugs(tail),

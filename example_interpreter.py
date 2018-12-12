@@ -59,8 +59,8 @@ def eval_exp(exp, env, val):
     return disjp(
         fresh(lambda v: conjp(
             eq([Symbol("quote"), v], exp),
-            missing(Symbol("quote"), env),
             eq(v, val),
+            missing(Symbol("quote"), env),
         )),
         fresh(lambda ap: conjp(
             eq([Symbol("list"), ap, ...], exp),
@@ -80,8 +80,8 @@ def eval_exp(exp, env, val):
         fresh[2](lambda x, body: conjp(
             eq([Symbol("lambda"), [x], body], exp),
             eqt(x, Symbol),
+            eq((closure, x, body, env), val),
             missing(Symbol("lambda"), env),
-            eq((closure, x, body, env), val)
         ))
     )
 

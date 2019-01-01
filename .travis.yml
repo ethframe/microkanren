@@ -1,10 +1,6 @@
 language: python
 
-services:
-  - docker
-
-os:
-  - linux
+dist: xenial
 
 python:
   - 3.5

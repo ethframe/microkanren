@@ -65,6 +65,7 @@ def eval_exp(exp, env, val):
             missing(Symbol("list"), env),
             proper(ap, env, val),
         )),
+        (eqt(exp, Symbol), lookup(exp, env, val)),
         fresh[6](lambda rator, rand, x, body, envc, a: conjp(
             eq([rator, rand], exp),
             eval_exp(rator, env, (closure, x, body, envc)),
@@ -77,7 +78,6 @@ def eval_exp(exp, env, val):
             eq((closure, x, body, env), val),
             missing(Symbol("lambda"), env),
         )),
-        (eqt(exp, Symbol), lookup(exp, env, val)),
     )
 
 

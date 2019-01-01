@@ -1,6 +1,6 @@
 from mk.core import conj, disj, eq, eqt
 from mk.disequality import neq
-from mk.ext import conde, conjp, delay, disjp, fresh
+from mk.ext import conde, conjp, delay, fresh
 from mk.run import run
 from mk.unify import Var
 
@@ -21,8 +21,8 @@ def lookup(x, env, t):
     return fresh[3](lambda rest, y, v: conj(
         eq(((y, v), rest), env),
         conde(
-            [eq(y, x), eq(v, t)],
-            [neq(y, x), lookup(x, rest, t)]
+            (eq(y, x), eq(v, t)),
+            (neq(y, x), lookup(x, rest, t))
         )
     ))
 
@@ -42,21 +42,19 @@ def missing(x, env):
 @delay
 def proper(exp, env, val):
     return conde(
-        [eq([], exp), eq([], val)],
-        [
-            fresh[4](lambda a, d, ta, td: conjp(
-                eq([a, d, ...], exp),
-                eq([ta, td, ...], val),
-                eval_exp(a, env, ta),
-                proper(d, env, td)
-            ))
-        ]
+        (eq([], exp), eq([], val)),
+        fresh[4](lambda a, d, ta, td: conjp(
+            eq([a, d, ...], exp),
+            eq([ta, td, ...], val),
+            eval_exp(a, env, ta),
+            proper(d, env, td)
+        ))
     )
 
 
 @delay
 def eval_exp(exp, env, val):
-    return disjp(
+    return conde(
         fresh(lambda v: conjp(
             eq([Symbol("quote"), v], exp),
             eq(v, val),
@@ -67,10 +65,6 @@ def eval_exp(exp, env, val):
             missing(Symbol("list"), env),
             proper(ap, env, val),
         )),
-        conj(
-            eqt(exp, Symbol),
-            lookup(exp, env, val),
-        ),
         fresh[6](lambda rator, rand, x, body, envc, a: conjp(
             eq([rator, rand], exp),
             eval_exp(rator, env, (closure, x, body, envc)),
@@ -82,7 +76,8 @@ def eval_exp(exp, env, val):
             eqt(x, Symbol),
             eq((closure, x, body, env), val),
             missing(Symbol("lambda"), env),
-        ))
+        )),
+        (eqt(exp, Symbol), lookup(exp, env, val)),
     )
 
 

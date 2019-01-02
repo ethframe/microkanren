@@ -58,10 +58,6 @@ def pairs_as_list(p):
 def typeof(x):
     if type(x) is Var:
         return x
-    if type(x) is list:
-        x = list_as_pairs(x)
-    if isinstance(x, tuple):
-        return (type(x),) + tuple(typeof(i) for i in x)
     return type(x)
 
 

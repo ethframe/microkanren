@@ -1,5 +1,5 @@
 from .stream import MZero, Unit
-from .unify import typeof, unify
+from .unify import typeof, unify, walk
 
 
 def apply_constraints(vs, state):
@@ -16,8 +16,9 @@ def do_eq(u, v, state):
     a = unify(u, v, subst)
     if a is None:
         return MZero()
-    if unify(typeof(u), typeof(v), types) is None:
-        return MZero()
+    for e in a:
+        if unify(e, typeof(walk(e, subst)), types) is None:
+            return MZero()
     return apply_constraints(a, state)
 
 

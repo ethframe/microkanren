@@ -23,12 +23,6 @@ def reify(v, state):
         v = walk(v, types)
         if isinstance(v, Var):
             return "_{}".format(n[v])
-        if isinstance(v, Pair):
-            v = pairs_as_list(v)
-        if isinstance(v, list):
-            return "[{}]".format(", ".join(_type(e) for e in v))
-        if isinstance(v, tuple):
-            return "({})".format(", ".join(_type(e) for e in v))
         return v.__name__
 
     def _reify(v):

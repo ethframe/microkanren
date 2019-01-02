@@ -16,7 +16,8 @@ SMALL = 4
 def jugs(states):
     return disj(
         eq([(0, 0, "")], states),
-        fresh[8](
+        fresh(
+            8,
             lambda big, small, act, prev_big, prev_small, tail, _, __: conjp(
                 eq([(big, small, act), tail, ...], states),
                 eq([(prev_big, prev_small, _), __, ...], tail),

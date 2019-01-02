@@ -6,22 +6,11 @@ from .stream import Thunk
 from .unify import Var, walk
 
 
-class _Fresh:
-    __slots__ = ("nargs",)
-
-    def __init__(self, nargs):
-        self.nargs = nargs
-
-    def __call__(self, fn):
-        return fn(*(Var() for _ in range(self.nargs)))
-
-    def __getitem__(self, nargs):
-        if nargs < 1:
-            raise ValueError()
-        return _Fresh(nargs)
-
-
-fresh = _Fresh(1)
+def fresh(fst, *args):
+    if not args:
+        return fst(Var())
+    (fn,) = args
+    return fn(*(Var() for _ in range(fst)))
 
 
 def conjp(g, *gs):

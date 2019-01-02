@@ -58,11 +58,11 @@ TPoly = namedtuple("TPoly", "env body")
 
 @delay
 def lookup(o, v, x):
-    return fresh[3](lambda a, b, t: conj(
+    return fresh(3, lambda a, b, t: conj(
         eq(o, ((a, b), t)),
         conde(
             [eq(a, v), eq(b, TMono(x))],
-            fresh[3](lambda po, pb, pm: conjp(
+            fresh(3, lambda po, pb, pm: conjp(
                 eq(a, v),
                 eq(b, TPoly(po, pb)),
                 infer(pb, po, x, pm),
@@ -80,29 +80,29 @@ def infer(expr, env, typ, ann):
             lookup(env, n, typ),
             eq(ann, Ann(expr, typ)),
         )),
-        fresh[6](lambda f, ft, fa, a, at, aa: conjp(
+        fresh(6, lambda f, ft, fa, a, at, aa: conjp(
             eq(expr, App(f, a)),
             infer(a, env, at, aa),
             infer(f, env, TFunc(at, typ), fa),
             eq(ann, App(fa, aa)),
         )),
-        fresh[5](lambda v, vt, b, bt, ba: conjp(
+        fresh(5, lambda v, vt, b, bt, ba: conjp(
             eq(expr, Abs(Sym(v), b)),
             infer(b, ((v, TMono(vt)), env), bt, ba),
             eq(typ, TFunc(vt, bt)),
             eq(ann, Abs(Ann(Sym(v), vt), ba)),
         )),
-        fresh[4](lambda n, v, b, bm: conjp(
+        fresh(4, lambda n, v, b, bm: conjp(
             eq(expr, Let(Sym(n), v, b)),
             infer(b, ((n, TPoly(env, v)), env), typ, bm),
             eq(ann, Let(Sym(n), v, bm)),
         )),
-        fresh[3](lambda n, b, bm: conjp(
+        fresh(3, lambda n, b, bm: conjp(
             eq(expr, Rec(Sym(n), b)),
             infer(b, ((n, TMono(typ)), env), typ, bm),
             eq(ann, Rec(Ann(Sym(n), typ), bm)),
         )),
-        fresh[6](lambda c, cm, a, am, b, bm: conjp(
+        fresh(6, lambda c, cm, a, am, b, bm: conjp(
             eq(expr, If(c, a, b)),
             infer(c, env, TTerm("bool"), cm),
             infer(a, env, typ, am),

@@ -18,7 +18,7 @@ closure = object()
 
 @delay
 def lookup(x, env, t):
-    return fresh[3](lambda rest, y, v: conj(
+    return fresh(3, lambda rest, y, v: conj(
         eq(((y, v), rest), env),
         conde(
             (eq(y, x), eq(v, t)),
@@ -31,7 +31,7 @@ def lookup(x, env, t):
 def missing(x, env):
     return disj(
         eq((), env),
-        fresh[3](lambda rest, y, v: conjp(
+        fresh(3, lambda rest, y, v: conjp(
             eq(((y, v), rest), env),
             neq(y, x),
             missing(x, rest)
@@ -43,7 +43,7 @@ def missing(x, env):
 def proper(exp, env, val):
     return conde(
         (eq([], exp), eq([], val)),
-        fresh[4](lambda a, d, ta, td: conjp(
+        fresh(4, lambda a, d, ta, td: conjp(
             eq([a, d, ...], exp),
             eq([ta, td, ...], val),
             eval_exp(a, env, ta),
@@ -66,13 +66,13 @@ def eval_exp(exp, env, val):
             proper(ap, env, val),
         )),
         (eqt(exp, Symbol), lookup(exp, env, val)),
-        fresh[6](lambda rator, rand, x, body, envc, a: conjp(
+        fresh(6, lambda rator, rand, x, body, envc, a: conjp(
             eq([rator, rand], exp),
             eval_exp(rator, env, (closure, x, body, envc)),
             eval_exp(rand, env, a),
             eval_exp(body, ((x, a), envc), val)
         )),
-        fresh[2](lambda x, body: conjp(
+        fresh(2, lambda x, body: conjp(
             eq([Symbol("lambda"), [x], body], exp),
             eqt(x, Symbol),
             eq((closure, x, body, env), val),

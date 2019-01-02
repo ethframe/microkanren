@@ -14,4 +14,4 @@ install:
 script: pytest --cov=mk/ --cov-branch tests/
 
 after_success:
-- codecov
+  - codecov

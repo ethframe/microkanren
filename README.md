@@ -81,7 +81,8 @@ print(list(run(0, (a, b), goal)))
 #### `mk.dsl`
 
 * `@delay(goal_constructor)` - decorator for recursive goal constructors
-* `fresh[n](goal_constructor)` - constructs goal that calls `goal_constructor` with `n` fresh variables
+* `fresh(goal_constructor)` - constructs goal that calls `goal_constructor` with fresh variable
+* `fresh(n, goal_constructor)` - constructs goal that calls `goal_constructor` with `n` fresh variables
 
 ### Running goals
 

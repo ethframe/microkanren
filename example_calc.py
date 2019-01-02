@@ -1,6 +1,6 @@
 from mk.arithmetic import add, div, mul, sub
 from mk.core import eq, eqt
-from mk.ext import conde, delay
+from mk.dsl import conde, delay
 from mk.run import run
 from mk.unify import Var
 

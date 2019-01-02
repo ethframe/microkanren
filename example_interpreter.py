@@ -1,6 +1,6 @@
 from mk.core import conj, disj, eq, eqt
 from mk.disequality import neq
-from mk.ext import conde, conjp, delay, fresh
+from mk.dsl import conde, conjp, delay, fresh
 from mk.run import run
 from mk.unify import Var
 

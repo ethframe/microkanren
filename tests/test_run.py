@@ -2,7 +2,7 @@ from collections import namedtuple
 
 import pytest
 from mk.core import eq, eqt
-from mk.ext import conjp
+from mk.dsl import conjp
 from mk.run import run
 from mk.unify import Var
 

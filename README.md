@@ -16,7 +16,7 @@ Features:
 ```python
 from mk.arithmetic import add, lte, mul
 from mk.core import disj, eq
-from mk.ext import conjp, delay, fresh
+from mk.dsl import conjp, delay, fresh
 from mk.run import run
 from mk.unify import Var
 
@@ -70,7 +70,7 @@ print(list(run(0, (a, b), goal)))
 * `gte(a, b)` - construct goal that succeeds when `a >= b`
 * `lte(a, b)` - construct goal that succeeds when `a <= b`
 
-#### `mk.ext`
+#### `mk.dsl`
 
 * `disjp(goal, ...)` - n-ary `disj`
 * `conjp(goal, ...)` - n-ary `conj`
@@ -78,7 +78,7 @@ print(list(run(0, (a, b), goal)))
 
 ### Goal helpers
 
-#### `mk.ext`
+#### `mk.dsl`
 
 * `@delay(goal_constructor)` - decorator for recursive goal constructors
 * `fresh[n](goal_constructor)` - constructs goal that calls `goal_constructor` with `n` fresh variables

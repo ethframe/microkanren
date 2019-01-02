@@ -4,7 +4,7 @@ from itertools import count, islice
 from .core import WatchList
 from .dispatch import SingledispatchCache
 from .stream import unfold
-from .unify import Pair, Var, null, walk
+from .unify import Var, walk
 
 
 class ReifiedVar:
@@ -40,33 +40,6 @@ def reify(v, state):
     subst, types, cons = state
     cnt = defaultdict(count().__next__)
     return reify_value(v, subst, types, cnt)
-
-
-def _reify_tuple(v, subst, types, cnt):
-    if type(v) == tuple:
-        return tuple(reify_value(e, subst, types, cnt) for e in v)
-    return type(v)._make(reify_value(e, subst, types, cnt) for e in v)
-
-
-_reifiers.add(tuple, _reify_tuple)
-
-
-def _reify_pair(v, subst, types, cnt):
-    car = reify_value(v.car, subst, types, cnt)
-    cdr = reify_value(v.cdr, subst, types, cnt)
-    if cdr is null:
-        return [car]
-    if isinstance(cdr, list):
-        return [car] + cdr
-    return [car, cdr, ...]
-
-
-def _reify_null(v, subst, types, cnt):
-    return []
-
-
-_reifiers.add_exact(Pair, _reify_pair)
-_reifiers.add_exact(type(null), _reify_null)
 
 
 def initial():

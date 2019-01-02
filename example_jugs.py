@@ -1,7 +1,7 @@
 from mk.arithmetic import add, gte, lte
 from mk.core import conj, disj, eq
 from mk.disequality import neq
-from mk.ext import conde, conjp, delay, fresh, run
+from mk.dsl import conde, conjp, delay, fresh, run
 from mk.unify import Var
 
 # BIG = 5

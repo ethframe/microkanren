@@ -1,6 +1,6 @@
 from .core import do_eq
 from .deferred import make_relation
-from .ext import walk_args
+from .dsl import walk_args
 from .stream import MZero, Unit
 from .unify import Var
 

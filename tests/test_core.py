@@ -2,7 +2,7 @@ import pytest
 from mk.core import conj, disj, eq, eqt
 from mk.run import initial
 from mk.stream import unfold
-from mk.unify import Var, list_as_pairs
+from mk.unify import Var, convert
 
 a = Var()
 b = Var()
@@ -21,14 +21,9 @@ GOALS_DATA = [
     (conj(conj(eqt(a, int), eqt(b, int)), eq(a, b)), [{a: b}]),
     (conj(conj(eqt(a, int), eqt(b, str)), eq(a, b)), []),
 
-    (
-        conj(conj(eq(a, [1]), eq(b, 1)), eq(a, [b])),
-        [{a: list_as_pairs([1]), b: 1}]
-    ),
-    (
-        conj(conj(eq(a, [b]), eq(b, 1)), eq(a, [1])),
-        [{a: list_as_pairs([b]), b: 1}]
-    ),
+    (conj(conj(eq(a, [1]), eq(b, 1)), eq(a, [b])), [{a: convert([1]), b: 1}]),
+    (conj(conj(eq(a, [b]), eq(b, 1)), eq(a, [1])), [{a: convert([b]), b: 1}]),
+    (conj(conj(eq(a, [b]), eq(b, 1)), eq(a, [2])), [])
 ]
 
 

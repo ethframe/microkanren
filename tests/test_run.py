@@ -1,11 +1,10 @@
+from collections import namedtuple
+
 import pytest
-from mk.core import conj, disj, eq, eqt
+from mk.core import eq, eqt
 from mk.ext import conjp
 from mk.run import run
-from mk.stream import unfold
-from mk.unify import Var, list_as_pairs
-
-from collections import namedtuple
+from mk.unify import Var
 
 a = Var()
 b = Var()
@@ -32,6 +31,7 @@ REIFY_DATA = [
     (eq(a, [1, b]), a, '[1, _0:_0]'),
     (eq(a, [1, b, ...]), a, '[1, _0:_0, Ellipsis]'),
     (eqt(a, int), a, '_0:int'),
+    (conjp(eqt(a, int), eq(a, b)), (a, b), '(_0:int, _0:int)'),
 ]
 
 

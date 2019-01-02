@@ -1,12 +1,10 @@
 from collections import namedtuple
 
+from .dispatch import SingledispatchCache
+
 
 class Var:
     __slots__ = ()
-
-
-null = object()
-Pair = namedtuple("Pair", "car cdr")
 
 
 def walk(v, subst):
@@ -18,12 +16,13 @@ def walk(v, subst):
     return v
 
 
+_occurs_checkers = SingledispatchCache()
+
+
 def occurs(v, x, subst):
-    if isinstance(x, tuple):
-        for e in x:
-            if occurs(v, walk(e, subst), subst):
-                return True
-        return False
+    fn = _occurs_checkers[type(x)]
+    if fn:
+        return fn(v, x, subst)
     return v is x
 
 
@@ -34,49 +33,50 @@ def assoc(v, x, subst):
     return [v]
 
 
-def list_as_pairs(x):
-    if len(x) >= 2 and x[-1] is Ellipsis:
-        p = x[-2]
-        x = x[:-2]
-    else:
-        p = null
-    for e in reversed(x):
-        p = Pair(e, p)
-    return p
+_converters = SingledispatchCache()
 
 
-def pairs_as_list(p):
-    x = []
-    while isinstance(p, Pair):
-        x.append(p.car)
-        p = p.cdr
-    if p is not null:
-        x.append(Ellipsis)
+def convert(x):
+    fn = _converters[type(x)]
+    if fn:
+        return fn(x)
     return x
 
 
 def typeof(x):
     if type(x) is Var:
         return x
-    return type(x)
+    return type(convert(x))
+
+
+_unifiers = SingledispatchCache()
 
 
 def unify(u, v, subst, list=list):
     u = walk(u, subst)
     v = walk(v, subst)
-    if type(v) is list:
-        v = list_as_pairs(v)
     if type(u) is Var:
         if u is v:
             return []
-        return assoc(u, v, subst)
-    if type(u) is list:
-        u = list_as_pairs(u)
+        return assoc(u, convert(v), subst)
     if type(v) is Var:
-        return assoc(v, u, subst)
-    if isinstance(u, tuple) and isinstance(v, tuple) and len(u) == len(v):
-        if type(u) is not type(v):
-            return None
+        return assoc(v, convert(u), subst)
+    fn = _unifiers[type(u)]
+    if fn:
+        return fn(u, v, subst)
+    if u == v:
+        return []
+
+
+def _tuple_occurs(v, x, subst):
+    for e in x:
+        if occurs(v, walk(e, subst), subst):
+            return True
+    return False
+
+
+def _tuple(u, v, subst):
+    if type(u) is type(v) and len(u) == len(v):
         a = []
         for x, y in zip(u, v):
             e = unify(x, y, subst)
@@ -84,6 +84,68 @@ def unify(u, v, subst, list=list):
                 return None
             a.extend(e)
         return a
-    if u == v:
-        return []
-    return None
+
+
+_occurs_checkers.add(tuple, _tuple_occurs)
+_unifiers.add(tuple, _tuple)
+
+
+Pair = namedtuple("Pair", "car, cdr")
+
+
+class _Null:
+    __slots__ = ()
+
+
+null = _Null()
+
+
+def _convert_list(x):
+    if len(x) >= 2 and x[-1] is Ellipsis:
+        p = convert(x[-2])
+        x = x[:-2]
+    else:
+        p = null
+    for e in reversed(x):
+        p = Pair(convert(e), p)
+    return p
+
+
+def _unify_pairs(u, v, subst):
+    a = []
+    while type(u) is Pair and type(v) is Pair:
+        e = unify(u.car, v.car, subst)
+        if e is None:
+            return None
+        a.extend(e)
+        u, v = u.cdr, v.cdr
+    e = unify(u, v, subst)
+    if e is not None:
+        a.extend(e)
+        return a
+
+
+def _list(u, v, subst):
+    if isinstance(v, list):
+        v = _convert_list(v)
+    elif not (type(v) is Pair or v is null):
+        return None
+    u = _convert_list(u)
+    if u is null:
+        if u is v:
+            return []
+        return None
+    return _unify_pairs(u, v, subst)
+
+
+def _pair(u, v, subst):
+    if isinstance(v, list):
+        v = _convert_list(v)
+    elif not type(v) is Pair:
+        return None
+    return _unify_pairs(u, v, subst)
+
+
+_converters.add_exact(list, _convert_list)
+_unifiers.add_exact(list, _list)
+_unifiers.add_exact(Pair, _pair)

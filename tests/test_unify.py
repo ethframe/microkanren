@@ -1,6 +1,5 @@
 import pytest
-from mk.unify import Var, unify, list_as_pairs
-
+from mk.unify import Var, convert, unify
 
 u = Var()
 v = Var()
@@ -27,7 +26,7 @@ UNIFY_DATA = [
     (u, (1, u), {}, None, None),
 
     ([u, v], [1, 2], {}, [u, v], {u: 1, v: 2}),
-    ([u, v, ...], [1, 2], {}, [u, v], {u: 1, v: list_as_pairs([2])}),
+    ([u, v, ...], [1, 2], {}, [u, v], {u: 1, v: convert([2])}),
     ([u, v], (1, 2), {}, None, None),
 ]
 

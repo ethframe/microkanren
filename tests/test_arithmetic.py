@@ -1,7 +1,6 @@
 import pytest
-from mk.arithmetic import add, sub, mul, div, gte, lte
-from mk.core import conj, eq, eqt
-from mk.disequality import neq, neqt
+from mk.arithmetic import add, div, gte, lte, mul, sub
+from mk.core import conj, eq
 from mk.run import initial
 from mk.stream import unfold
 from mk.unify import Var

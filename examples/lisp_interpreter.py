@@ -1,8 +1,9 @@
 from collections import namedtuple
 
 from mk.core import conj, disj, eq, eqt
-from mk.disequality import neq, neqt
+from mk.disequality import neq
 from mk.dsl import conde, conjp, delay, fresh
+from mk.ext.lists import no_item
 from mk.run import run
 from mk.unify import Var
 
@@ -55,10 +56,14 @@ def eval_list(lst, env, out):
 quote, list_, lambda_ = map(Symbol, "quote list lambda".split())
 
 
+def is_closure(a):
+    return type(a) is Closure
+
+
 @delay
 def eval_expr(exp, env, out):
     return conde(
-        (eq([quote, out], exp), neqt(out, Closure), missing(quote, env)),
+        (eq([quote, out], exp), no_item(out, is_closure), missing(quote, env)),
         fresh(lambda lst: conjp(
             eq([list_, lst, ...], exp),
             missing(list_, env), eval_list(lst, env, out),
@@ -83,11 +88,11 @@ def format_sexpr(s):
     return repr(s)
 
 
-def main():
+def quines():
     q = Var()
     for s in run(5, q, eval_expr(q, (), q)):
         print(format_sexpr(s))
 
 
 if __name__ == '__main__':
-    main()
+    quines()

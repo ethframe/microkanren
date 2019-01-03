@@ -2,7 +2,8 @@ from collections import namedtuple
 
 from mk.registry import register_exact
 from mk.run import reify_value
-from mk.unify import convert, unify
+from mk.stream import MZero, Unit
+from mk.unify import Var, convert, unify, walk
 
 Pair = namedtuple("Pair", "car, cdr")
 
@@ -77,3 +78,20 @@ def _reify_null(v, subst, types, cnt):
 register_exact(list, convert=_convert_list, unify=_list)
 register_exact(Pair, unify=_pair, reify=_reify_pair)
 register_exact(_Null, reify=_reify_null)
+
+
+def no_item(val, pred):
+    def _goal(state):
+        a = walk(val, state[0])
+        if type(a) is Var:
+            cons = state[2]
+            cons[a].append(_goal)
+            return Unit(state)
+        if type(a) is Pair:
+            return Unit(state).\
+                bind(no_item(a.car, pred)).\
+                bind(no_item(a.cdr, pred))
+        if pred(a):
+            return MZero()
+        return Unit(state)
+    return _goal

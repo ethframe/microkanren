@@ -153,6 +153,12 @@ def main():
         print(s[0])
         print(s[1])
 
+    t = TFunc(TTerm("int"), TTerm("bool"))
+    m = Var()
+    p = Var()
+    for s in run(10, p, infer(p, env, t, m)):
+        print(s)
+
 
 if __name__ == '__main__':
     main()

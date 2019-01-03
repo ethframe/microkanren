@@ -1,5 +1,7 @@
+from collections import namedtuple
+
 from mk.core import conj, disj, eq, eqt
-from mk.disequality import neq
+from mk.disequality import neq, neqt
 from mk.dsl import conde, conjp, delay, fresh
 from mk.run import run
 from mk.unify import Var
@@ -13,71 +15,63 @@ class Symbol(str):
         return type(self) is type(other) and super().__eq__(other)
 
 
-closure = object()
+Closure = namedtuple("Closure", "arg, body, env")
+Env = namedtuple("Env", "var, val, env")
 
 
 @delay
-def lookup(x, env, t):
-    return fresh(3, lambda rest, y, v: conj(
-        eq(((y, v), rest), env),
+def lookup(var, env, out):
+    return fresh(3, lambda rest, sym, val: conj(
+        eq(Env(sym, val, rest), env),
         conde(
-            (eq(y, x), eq(v, t)),
-            (neq(y, x), lookup(x, rest, t))
+            (eq(sym, var), eq(val, out)),
+            (neq(sym, var), lookup(var, rest, out))
         )
     ))
 
 
 @delay
-def missing(x, env):
+def missing(var, env):
     return disj(
         eq((), env),
-        fresh(3, lambda rest, y, v: conjp(
-            eq(((y, v), rest), env),
-            neq(y, x),
-            missing(x, rest)
-        ))
+        fresh(3, lambda rest, sym, val: conjp(
+            eq(Env(sym, val, rest), env), neq(sym, var),
+            missing(var, rest),
+        )),
     )
 
 
 @delay
-def proper(exp, env, val):
+def eval_list(lst, env, out):
     return conde(
-        (eq([], exp), eq([], val)),
-        fresh(4, lambda a, d, ta, td: conjp(
-            eq([a, d, ...], exp),
-            eq([ta, td, ...], val),
-            eval_exp(a, env, ta),
-            proper(d, env, td)
+        (eq([], lst), eq([], out)),
+        fresh(4, lambda h, t, oh, ot: conjp(
+            eq([h, t, ...], lst), eq([oh, ot, ...], out),
+            eval_expr(h, env, oh), eval_list(t, env, ot),
         ))
     )
 
 
+quote, list_, lambda_ = map(Symbol, "quote list lambda".split())
+
+
 @delay
-def eval_exp(exp, env, val):
+def eval_expr(exp, env, out):
     return conde(
-        fresh(lambda v: conjp(
-            eq([Symbol("quote"), v], exp),
-            eq(v, val),
-            missing(Symbol("quote"), env),
+        (eq([quote, out], exp), neqt(out, Closure), missing(quote, env)),
+        fresh(lambda lst: conjp(
+            eq([list_, lst, ...], exp),
+            missing(list_, env), eval_list(lst, env, out),
         )),
-        fresh(lambda ap: conjp(
-            eq([Symbol("list"), ap, ...], exp),
-            missing(Symbol("list"), env),
-            proper(ap, env, val),
+        fresh(4, lambda var, body, cenv, arg: conjp(
+            eval_list(exp, env, [Closure(var, body, cenv), arg]),
+            eval_expr(body, Env(var, arg, cenv), out),
         )),
-        (eqt(exp, Symbol), lookup(exp, env, val)),
-        fresh(6, lambda rator, rand, x, body, envc, a: conjp(
-            eq([rator, rand], exp),
-            eval_exp(rator, env, (closure, x, body, envc)),
-            eval_exp(rand, env, a),
-            eval_exp(body, ((x, a), envc), val)
+        fresh(2, lambda var, body: conjp(
+            eq([lambda_, [var], body], exp), eq(Closure(var, body, env), out),
+            eqt(var, Symbol), missing(lambda_, env),
         )),
-        fresh(2, lambda x, body: conjp(
-            eq([Symbol("lambda"), [x], body], exp),
-            eqt(x, Symbol),
-            eq((closure, x, body, env), val),
-            missing(Symbol("lambda"), env),
-        )),
+        (eqt(exp, Symbol), lookup(exp, env, out)),
     )
 
 
@@ -91,7 +85,7 @@ def format_sexpr(s):
 
 def main():
     q = Var()
-    for s in run(5, q, eval_exp(q, (), q)):
+    for s in run(5, q, eval_expr(q, (), q)):
         print(format_sexpr(s))
 
 

@@ -1,5 +1,6 @@
-from mk.run import _reifiers, reify_value
-from mk.unify import _occurs_checkers, _unifiers, occurs, walk, unify
+from mk.registry import register
+from mk.run import reify_value
+from mk.unify import occurs, unify, walk
 
 
 def _tuple_occurs(v, x, subst):
@@ -26,6 +27,4 @@ def _reify_tuple(v, subst, types, cnt):
     return type(v)._make(reify_value(e, subst, types, cnt) for e in v)
 
 
-_occurs_checkers.add(tuple, _tuple_occurs)
-_unifiers.add(tuple, _tuple)
-_reifiers.add(tuple, _reify_tuple)
+register(tuple, occurs=_tuple_occurs, unify=_tuple, reify=_reify_tuple)

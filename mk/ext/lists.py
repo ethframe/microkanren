@@ -1,7 +1,8 @@
 from collections import namedtuple
 
-from mk.run import _reifiers, reify_value
-from mk.unify import _converters, _unifiers, convert, unify
+from mk.registry import register_exact
+from mk.run import reify_value
+from mk.unify import convert, unify
 
 Pair = namedtuple("Pair", "car, cdr")
 
@@ -73,8 +74,6 @@ def _reify_null(v, subst, types, cnt):
     return []
 
 
-_converters.add_exact(list, _convert_list)
-_unifiers.add_exact(list, _list)
-_unifiers.add_exact(Pair, _pair)
-_reifiers.add_exact(Pair, _reify_pair)
-_reifiers.add_exact(_Null, _reify_null)
+register_exact(list, convert=_convert_list, unify=_list)
+register_exact(Pair, unify=_pair, reify=_reify_pair)
+register_exact(_Null, reify=_reify_null)

@@ -1,6 +1,7 @@
 from mk.registry import register
 from mk.run import reify_value
-from mk.unify import occurs, unify, walk
+from mk.stream import MZero, Unit
+from mk.unify import Var, occurs, unify, walk
 
 
 def _tuple_occurs(v, x, subst):
@@ -28,3 +29,20 @@ def _reify_tuple(v, subst, types, cnt):
 
 
 register(tuple, occurs=_tuple_occurs, unify=_tuple, reify=_reify_tuple)
+
+
+def no_item(val, pred):
+    def _goal(state):
+        a = walk(val, state[0])
+        if type(a) is Var:
+            cons = state[2]
+            cons[a].append(_goal)
+            return Unit(state)
+        if pred(a):
+            return MZero()
+        stream = Unit(state)
+        if isinstance(a, tuple):
+            for e in a:
+                stream = stream.bind(no_item(e, pred))
+        return stream
+    return _goal

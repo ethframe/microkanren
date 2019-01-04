@@ -81,6 +81,8 @@ register_exact(_Null, reify=_reify_null)
 
 
 def no_item(val, pred):
+    val = convert(val)
+
     def _goal(state):
         a = walk(val, state[0])
         if type(a) is Var:

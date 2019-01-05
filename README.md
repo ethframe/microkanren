@@ -1,7 +1,7 @@
 # microkanren
 
-[![Build Status](https://travis-ci.com/ethframe/microkanren.svg?branch=master)](https://travis-ci.com/ethframe/microkanren)
-[![codecov](https://codecov.io/gh/ethframe/microkanren/branch/master/graph/badge.svg)](https://codecov.io/gh/ethframe/microkanren)
+[![Build Status](https://img.shields.io/travis/com/ethframe/microkanren/master.svg?logo=travis)](https://travis-ci.com/ethframe/microkanren)
+[![codecov](https://img.shields.io/codecov/c/github/ethframe/microkanren/master.svg?logo=codecov)](https://codecov.io/gh/ethframe/microkanren)
 
 Yet another microkanren implementation in Python. Still work in progress.
 

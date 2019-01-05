@@ -11,7 +11,9 @@ Features:
 * Type constraints
 * Reasonably fast non-relational arithmetic
 
-### Example: bruteforce factorization
+## Examples
+
+### Bruteforce factorization
 
 ```python
 from mk.arithmetic import add, lte, mul
@@ -45,6 +47,41 @@ print(list(run(0, (a, b), goal)))
 #  (17, 3855), (51, 1285), (85, 771),  (255, 257)]
 ```
 
+### Lisp-like language interpreter (without auxiliary code)
+
+Full source with quines generation: [examples/lisp_interpreter.py](https://github.com/ethframe/microkanren/blob/master/examples/lisp_interpreter.py)
+
+```python
+from mk.core import eq, eqt
+from mk.dsl import conde, conjp, delay, fresh
+from mk.ext.lists import no_item
+
+
+@delay
+def eval_expr(exp, env, out):
+    return conde(
+        # Quoted value - 'a
+        (eq([quote, out], exp), no_item(out, is_closure), missing(quote, env)),
+        # List constructor - (list a b c)
+        fresh(lambda lst: conjp(
+            eq([list_, lst, ...], exp),
+            missing(list_, env), eval_list(lst, env, out),
+        )),
+        # Function call - (fn a)
+        fresh(4, lambda var, body, cenv, arg: conjp(
+            eval_list(exp, env, [Closure(var, body, cenv), arg]),
+            eval_expr(body, Env(var, arg, cenv), out),
+        )),
+        # Function definition - (lambda (x) body)
+        fresh(2, lambda var, body: conjp(
+            eq([lambda_, [var], body], exp), eq(Closure(var, body, env), out),
+            eqt(var, Symbol), missing(lambda_, env),
+        )),
+        # Variable reference - a
+        (eqt(exp, Symbol), lookup(exp, env, out)),
+    )
+```
+
 ## API summary
 
 ### Goal constructors
@@ -75,6 +112,14 @@ print(list(run(0, (a, b), goal)))
 * `disjp(goal, ...)` - n-ary `disj`
 * `conjp(goal, ...)` - n-ary `conj`
 * `conde((goal, ...), (goal, ...), ...)` - shortcut for `disjp(conjp(goal, ...), conjp(goal, ...), ...)`
+
+#### `mk.ext.lists`
+
+* `no_item(a, predicate)` - construct goal that fails when `a` is list that contains item, possibly in nested list, for which `predicate` is true.
+
+#### `mk.ext.tuples`
+
+* `no_item(a, predicate)` - construct goal that fails when `a` is tuple that contains item, possibly in nested tuple, for which `predicate` is true.
 
 ### Goal helpers
 

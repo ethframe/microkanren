@@ -1,14 +1,13 @@
 import pytest
 from mk.core import conj, eq
-from mk.dsl import conde, conjp, delay, disjp, fresh, zzz
+from mk.dsl import conjp
+from mk.ext.lists import no_item
 from mk.run import initial, reify
 from mk.stream import unfold
 from mk.unify import Var
-from mk.ext.lists import no_item
 
 a = Var()
 b = Var()
-c = Var()
 
 
 GOALS_DATA = [

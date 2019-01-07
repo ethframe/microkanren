@@ -8,12 +8,20 @@ from mk.run import run
 from mk.unify import Var
 
 
-class Symbol(str):
+class Ident(str):
     def __repr__(self):
         return self
 
     def __eq__(self, other):
         return type(self) is type(other) and super().__eq__(other)
+
+
+class Symbol(Ident):
+    pass
+
+
+class Builtin(Ident):
+    pass
 
 
 Closure = namedtuple("Closure", "arg, body, env")
@@ -53,43 +61,48 @@ def eval_list(lst, env, out):
     )
 
 
+def is_internal(a):
+    return isinstance(a, (Closure, Builtin))
+
+
 quote, list_, lambda_ = map(Symbol, "quote list lambda".split())
+car, cdr = map(Symbol, "car cdr".split())
+car_fn, cdr_fn = map(Builtin, "car cdr".split())
 
 
-def is_closure(a):
-    return type(a) is Closure
-
-
-def builtin(fn):
-    return disj(
-        eq(fn, Symbol("car")),
-        eq(fn, Symbol("cdr")),
+def builtin(fn, out):
+    return conde(
+        (eq(fn, car), eq(out, car_fn)),
+        (eq(fn, cdr), eq(out, cdr_fn)),
     )
 
 
 def eval_builtin(fn, arg, out):
     return fresh(lambda t: conde(
-        (eq(fn, Symbol("car")), eq([out, t, ...], arg)),
-        (eq(fn, Symbol("cdr")), eq([t, out, ...], arg)),
+        (eq(fn, car_fn), eq([out, t, ...], arg)),
+        (eq(fn, cdr_fn), eq([t, out, ...], arg)),
     ))
 
 
 @delay
 def eval_expr(exp, env, out):
     return conde(
-        (eq([quote, out], exp), no_item(out, is_closure), missing(quote, env)),
+        (
+            eq([quote, out], exp), no_item(out, is_internal),
+            missing(quote, env),
+        ),
         fresh(lambda lst: conjp(
             eq([list_, lst, ...], exp),
             missing(list_, env), eval_list(lst, env, out),
         )),
-        fresh(2, lambda fn, arg: conj(
+        fresh(5, lambda fn, arg, var, body, cenv: conj(
             eval_list(exp, env, [fn, arg]),
-            disj(
+            conde(
                 eval_builtin(fn, arg, out),
-                fresh(3, lambda var, body, cenv: conj(
+                (
                     eq(Closure(var, body, cenv), fn),
                     eval_expr(body, Env(var, arg, cenv), out),
-                )),
+                ),
             )
         )),
         fresh(2, lambda var, body: conjp(
@@ -97,7 +110,7 @@ def eval_expr(exp, env, out):
             eqt(var, Symbol), missing(lambda_, env),
         )),
         (eqt(exp, Symbol), lookup(exp, env, out)),
-        (builtin(exp), missing(exp, env), eq(exp, out)),
+        (builtin(exp, out), missing(exp, env)),
     )
 
 
@@ -117,5 +130,18 @@ def quines():
         print(format_sexpr(s))
 
 
+def generate_fn():
+    q = Var()
+    a = Symbol("a")
+    env = Env(Symbol("cadr"), Closure(a, [car, [cdr, a]], ()), ())
+    p = conj(
+        no_item(q, lambda a: isinstance(a, int)),
+        eval_expr([q, [quote, [1, 2, 3]]], env, [1, 2])
+    )
+    for s in run(5, q, p):
+        print(format_sexpr(s))
+
+
 if __name__ == '__main__':
     quines()
+    generate_fn()

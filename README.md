@@ -49,7 +49,7 @@ print(list(run(0, (a, b), goal)))
 
 ### Lisp-like language interpreter (without auxiliary code)
 
-Full source with quines generation: [examples/lisp_interpreter.py](https://github.com/ethframe/microkanren/blob/master/examples/lisp_interpreter.py)
+Full source with quines generation: [examples/lisp_interpreter.py](https://github.com/ethframe/microkanren/blob/0623d11b026be2428289d351cdcb75b3cd01d617/examples/lisp_interpreter.py)
 
 ```python
 from mk.core import eq, eqt

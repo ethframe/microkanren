@@ -60,6 +60,20 @@ def is_closure(a):
     return type(a) is Closure
 
 
+def builtin(fn):
+    return disj(
+        eq(fn, Symbol("car")),
+        eq(fn, Symbol("cdr")),
+    )
+
+
+def eval_builtin(fn, arg, out):
+    return fresh(lambda t: conde(
+        (eq(fn, Symbol("car")), eq([out, t, ...], arg)),
+        (eq(fn, Symbol("cdr")), eq([t, out, ...], arg)),
+    ))
+
+
 @delay
 def eval_expr(exp, env, out):
     return conde(
@@ -68,15 +82,22 @@ def eval_expr(exp, env, out):
             eq([list_, lst, ...], exp),
             missing(list_, env), eval_list(lst, env, out),
         )),
-        fresh(4, lambda var, body, cenv, arg: conjp(
-            eval_list(exp, env, [Closure(var, body, cenv), arg]),
-            eval_expr(body, Env(var, arg, cenv), out),
+        fresh(2, lambda fn, arg: conj(
+            eval_list(exp, env, [fn, arg]),
+            disj(
+                eval_builtin(fn, arg, out),
+                fresh(3, lambda var, body, cenv: conj(
+                    eq(Closure(var, body, cenv), fn),
+                    eval_expr(body, Env(var, arg, cenv), out),
+                )),
+            )
         )),
         fresh(2, lambda var, body: conjp(
             eq([lambda_, [var], body], exp), eq(Closure(var, body, env), out),
             eqt(var, Symbol), missing(lambda_, env),
         )),
         (eqt(exp, Symbol), lookup(exp, env, out)),
+        (builtin(exp), missing(exp, env), eq(exp, out)),
     )
 
 
@@ -85,6 +106,8 @@ def format_sexpr(s):
         if len(s) == 2 and s[0] == Symbol("quote"):
             return "'" + format_sexpr(s[1])
         return "({})".format(" ".join(format_sexpr(e) for e in s))
+    if s is Ellipsis:
+        return "..."
     return repr(s)
 
 

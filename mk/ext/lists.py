@@ -53,6 +53,14 @@ def _list(u, v, subst):
     return _unify_pairs(u, v, subst)
 
 
+def _null(u, v, subst):
+    if isinstance(v, list):
+        v = _convert_list(v)
+    if v is not null:
+        return None
+    return []
+
+
 def _pair(u, v, subst):
     if isinstance(v, list):
         v = _convert_list(v)
@@ -77,7 +85,7 @@ def _reify_null(v, subst, types, cnt):
 
 register_exact(list, convert=_convert_list, unify=_list)
 register_exact(Pair, unify=_pair, reify=_reify_pair)
-register_exact(_Null, reify=_reify_null)
+register_exact(_Null, unify=_null, reify=_reify_null)
 
 
 def no_item(val, pred):

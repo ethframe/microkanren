@@ -20,10 +20,10 @@ _reifiers = SingledispatchCache()
 
 
 def reify_type(v, types, cnt):
-    v = walk(v, types)
-    if isinstance(v, Var):
+    t_v = types.get(v)
+    if t_v is None:
         return "_{}".format(cnt[v])
-    return v.__name__
+    return t_v.__name__
 
 
 def reify_value(v, subst, types, cnt):

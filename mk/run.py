@@ -1,7 +1,7 @@
 from collections import defaultdict
 from itertools import count, islice
 
-from .core import WatchList
+from .core import initial
 from .dispatch import SingledispatchCache
 from .stream import unfold
 from .unify import Var, walk
@@ -40,10 +40,6 @@ def reify(v, state):
     subst, types, cons = state
     cnt = defaultdict(count().__next__)
     return reify_value(v, subst, types, cnt)
-
-
-def initial():
-    return {}, {}, WatchList()
 
 
 def run(c, v, g):

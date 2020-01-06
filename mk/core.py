@@ -45,6 +45,10 @@ class WatchList(dict):
         return WatchList((k, v.copy()) for k, v in self.items())
 
 
+def initial():
+    return {}, {}, WatchList()
+
+
 def copy(state):
     subst, types, cons = state
     return subst.copy(), types.copy(), cons.copy()

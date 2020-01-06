@@ -40,31 +40,14 @@ def _unify_pairs(u, v, subst):
         return a
 
 
-def _list(u, v, subst):
-    if isinstance(v, list):
-        v = _convert_list(v)
-    elif not (type(v) is Pair or v is null):
-        return None
-    u = _convert_list(u)
-    if u is null:
-        if u is v:
-            return []
-        return None
-    return _unify_pairs(u, v, subst)
-
-
 def _null(u, v, subst):
-    if isinstance(v, list):
-        v = _convert_list(v)
     if v is not null:
         return None
     return []
 
 
 def _pair(u, v, subst):
-    if isinstance(v, list):
-        v = _convert_list(v)
-    elif not type(v) is Pair:
+    if type(v) is not Pair:
         return None
     return _unify_pairs(u, v, subst)
 
@@ -72,8 +55,6 @@ def _pair(u, v, subst):
 def _reify_pair(v, subst, types, cnt):
     car = reify_value(v.car, subst, types, cnt)
     cdr = reify_value(v.cdr, subst, types, cnt)
-    if cdr is null:
-        return [car]
     if isinstance(cdr, list):
         return [car] + cdr
     return [car, cdr, ...]
@@ -83,7 +64,7 @@ def _reify_null(v, subst, types, cnt):
     return []
 
 
-register_exact(list, convert=_convert_list, unify=_list)
+register_exact(list, convert=_convert_list)
 register_exact(Pair, unify=_pair, reify=_reify_pair)
 register_exact(_Null, unify=_null, reify=_reify_null)
 

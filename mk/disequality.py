@@ -1,5 +1,5 @@
 from .stream import MZero, Unit
-from .unify import typeof, unify
+from .unify import Var, unify, walk
 
 
 def neq(u, v):
@@ -10,8 +10,6 @@ def neq(u, v):
             return Unit(state)
         if not a:
             return MZero()
-        if unify(typeof(u), typeof(v), types.copy()) is None:
-            return Unit(state)
         cons[a[0]].append(_goal)
         return Unit(state)
     return _goal
@@ -20,11 +18,16 @@ def neq(u, v):
 def neqt(v, t):
     def _goal(state):
         subst, types, cons = state
-        a = unify(typeof(v), t, types.copy())
-        if a is None:
-            return Unit(state)
-        if not a:
+        x = walk(v, subst)
+        t_x = type(x)
+        if t_x is Var:
+            t_x = types.get(x)
+            if t_x is None:
+                cons[x].append(_goal)
+                return Unit(state)
+            elif t_x is t:
+                return MZero()
+        elif t_x is t:
             return MZero()
-        cons[a[0]].append(_goal)
         return Unit(state)
     return _goal

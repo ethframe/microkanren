@@ -6,12 +6,13 @@ class Var:
 
 
 def walk(v, subst):
-    while type(v) is Var:
-        u = subst.get(v)
-        if u is None:
-            return v
+    if type(v) is not Var:
+        return convert(v)
+    u = subst.get(v)
+    while type(u) is Var:
         v = u
-    return v
+        u = subst.get(v)
+    return v if u is None else u
 
 
 _occurs_checkers = SingledispatchCache()
@@ -41,24 +42,18 @@ def convert(x):
     return x
 
 
-def typeof(x):
-    if type(x) is Var:
-        return x
-    return type(convert(x))
-
-
 _unifiers = SingledispatchCache()
 
 
-def unify(u, v, subst, list=list):
+def unify(u, v, subst):
     u = walk(u, subst)
     v = walk(v, subst)
     if type(u) is Var:
         if u is v:
             return []
-        return assoc(u, convert(v), subst)
+        return assoc(u, v, subst)
     if type(v) is Var:
-        return assoc(v, convert(u), subst)
+        return assoc(v, u, subst)
     fn = _unifiers[type(u)]
     if fn:
         return fn(u, v, subst)

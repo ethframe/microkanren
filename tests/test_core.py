@@ -16,7 +16,12 @@ GOALS_DATA = [
 
     (eqt(a, int), [{}]),
     (conj(eq(a, 1), eqt(a, int)), [{a: 1}]),
+    (conj(eqt(a, int), eq(a, 1)), [{a: 1}]),
     (conj(eq(a, 1), eqt(a, str)), []),
+    (conj(eqt(a, str), eq(a, 1)), []),
+
+    (conj(eqt(a, int), eqt(a, int)), [{}]),
+    (conj(eqt(a, int), eqt(a, str)), []),
 
     (conj(conj(eqt(a, int), eqt(b, int)), eq(a, b)), [{a: b}]),
     (conj(conj(eqt(a, int), eqt(b, str)), eq(a, b)), []),

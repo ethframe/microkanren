@@ -1,8 +1,12 @@
 import pytest
-from mk.stream import Unit, unfold
+from mk.stream import MZero, Thunk, Unit, unfold
 
 UNFOLD_DATA = [
+    (MZero(), []),
+
     (Unit(1), [1]),
+    (MZero().mplus(Unit(1)), [1]),
+
     (Unit(1).mplus(Unit(2)), [1, 2]),
     (Unit(1).mplus(Unit(2).mplus(Unit(3))), [1, 2, 3]),
 
@@ -10,6 +14,8 @@ UNFOLD_DATA = [
 
     (Unit(1).bind(lambda a: Unit(a + 1)), [2]),
     (Unit(1).mplus(Unit(2)).bind(lambda a: Unit(a + 1)), [2, 3]),
+
+    (Thunk(lambda: Unit(1)).mplus(Thunk(lambda: Unit(2))), [1, 2]),
 ]
 
 

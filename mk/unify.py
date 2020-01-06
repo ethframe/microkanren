@@ -42,12 +42,6 @@ def convert(x):
     return x
 
 
-def typeof(x):
-    if type(x) is Var:
-        return x
-    return type(convert(x))
-
-
 _unifiers = SingledispatchCache()
 
 

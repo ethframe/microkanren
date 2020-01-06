@@ -1,5 +1,5 @@
 from .stream import MZero, Unit
-from .unify import typeof, unify, walk
+from .unify import Var, unify, walk
 
 
 def apply_constraints(vs, state):
@@ -17,7 +17,18 @@ def do_eq(u, v, state):
     if a is None:
         return MZero()
     for e in a:
-        if unify(e, typeof(walk(e, subst)), types) is None:
+        t_e = types.pop(e, None)
+        if t_e is None:
+            continue
+        x = walk(e, subst)
+        t_x = type(x)
+        if t_x is Var:
+            t_x = types.get(x)
+            if t_x is None:
+                types[x] = t_e
+            elif t_x is not t_e:
+                return MZero()
+        elif t_x is not t_e:
             return MZero()
     return apply_constraints(a, state)
 
@@ -26,13 +37,21 @@ def eq(u, v):
     return lambda state: do_eq(u, v, state)
 
 
-def eqt(u, v):
+def eqt(v, t):
     def _goal(state):
         subst, types, cons = state
-        a = unify(typeof(u), v, types)
-        if a is None:
+        x = walk(v, subst)
+        t_x = type(x)
+        if t_x is Var:
+            t_x = types.get(x)
+            if t_x is None:
+                types[x] = t
+                return apply_constraints([x], state)
+            elif t_x is not t:
+                return MZero()
+        elif t_x is not t:
             return MZero()
-        return apply_constraints(a, state)
+        return Unit(state)
     return _goal
 
 

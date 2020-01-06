@@ -1,4 +1,6 @@
 class MZero:
+    __slots__ = ()
+
     def mplus(self, stream):
         return stream
 
@@ -10,6 +12,8 @@ class MZero:
 
 
 class Unit:
+    __slots__ = ('head',)
+
     def __init__(self, head):
         self.head = head
 
@@ -24,6 +28,8 @@ class Unit:
 
 
 class Cons:
+    __slots__ = ('head', 'tail')
+
     def __init__(self, head, tail):
         self.head = head
         self.tail = tail
@@ -39,7 +45,7 @@ class Cons:
 
 
 class Thunk:
-    __slots__ = ("thunk",)
+    __slots__ = ('thunk',)
 
     def __init__(self, thunk):
         self.thunk = thunk

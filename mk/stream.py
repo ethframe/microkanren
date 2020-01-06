@@ -6,7 +6,21 @@ class MZero:
         return self
 
     def next(self):
-        return self
+        return None, None
+
+
+class Unit:
+    def __init__(self, head):
+        self.head = head
+
+    def mplus(self, stream):
+        return Cons(self.head, stream)
+
+    def bind(self, goal):
+        return goal(self.head)
+
+    def next(self):
+        return self.head, None
 
 
 class Cons:
@@ -21,21 +35,7 @@ class Cons:
         return goal(self.head).mplus(Thunk(lambda: self.tail.bind(goal)))
 
     def next(self):
-        return self.tail
-
-
-class Unit:
-    def __init__(self, head):
-        self.head = head
-
-    def mplus(self, stream):
-        return Cons(self.head, stream)
-
-    def bind(self, goal):
-        return goal(self.head)
-
-    def next(self):
-        return MZero()
+        return self.head, self.tail
 
 
 class Thunk:
@@ -51,13 +51,11 @@ class Thunk:
         return Thunk(lambda: self.thunk().bind(goal))
 
     def next(self):
-        return self.thunk()
+        return None, self.thunk()
 
 
 def unfold(stream):
-    while type(stream) is not MZero:
-        while type(stream) is Thunk:
-            stream = stream.next()
-        while type(stream) in (Cons, Unit):
-            yield stream.head
-            stream = stream.next()
+    while stream is not None:
+        head, stream = stream.next()
+        if head is not None:
+            yield head

@@ -46,16 +46,27 @@ class Cons(Stream):
         self.tail = tail
 
     def mplus(self, stream):
-        return Cons(self.head, Thunk(MPlus(stream, self.tail)))
+        return Cons(self.head, MPlus(stream, self.tail))
 
     def bind(self, goal):
-        return goal(self.head).mplus(Thunk(Bind(self.tail, goal)))
+        return goal(self.head).mplus(Bind(self.tail, goal))
 
     def next(self):
         return self.head, self.tail
 
 
-class MPlus:
+class ThunkStream(Stream):
+    def mplus(self, stream):
+        return MPlusThunk(stream, self)
+
+    def bind(self, goal):
+        return BindThunk(self, goal)
+
+    def next(self):
+        return None, self()
+
+
+class MPlus(ThunkStream):
     __slots__ = ('left', 'right')
 
     def __init__(self, left, right):
@@ -66,7 +77,7 @@ class MPlus:
         return self.left.mplus(self.right)
 
 
-class Bind:
+class Bind(ThunkStream):
     __slots__ = ('stream', 'goal')
 
     def __init__(self, stream, goal):
@@ -84,16 +95,16 @@ class Thunk(Stream):
         self.thunk = thunk
 
     def mplus(self, stream):
-        return Thunk(MPlusThunk(stream, self.thunk))
+        return MPlusThunk(stream, self.thunk)
 
     def bind(self, goal):
-        return Thunk(BindThunk(self.thunk, goal))
+        return BindThunk(self.thunk, goal)
 
     def next(self):
         return None, self.thunk()
 
 
-class MPlusThunk:
+class MPlusThunk(ThunkStream):
     __slots__ = ('stream', 'thunk')
 
     def __init__(self, stream, thunk):
@@ -104,7 +115,7 @@ class MPlusThunk:
         return self.stream.mplus(self.thunk())
 
 
-class BindThunk:
+class BindThunk(ThunkStream):
     __slots__ = ('thunk', 'goal')
 
     def __init__(self, thunk, goal):

@@ -1,4 +1,15 @@
-class MZero:
+class Stream:
+    def mplus(self, stream):
+        raise NotImplementedError()
+
+    def bind(self, stream):
+        raise NotImplementedError()
+
+    def next(self, stream):
+        raise NotImplementedError()
+
+
+class MZero(Stream):
     __slots__ = ()
 
     def mplus(self, stream):
@@ -11,7 +22,7 @@ class MZero:
         return None, None
 
 
-class Unit:
+class Unit(Stream):
     __slots__ = ('head',)
 
     def __init__(self, head):
@@ -27,7 +38,7 @@ class Unit:
         return self.head, None
 
 
-class Cons:
+class Cons(Stream):
     __slots__ = ('head', 'tail')
 
     def __init__(self, head, tail):
@@ -44,7 +55,7 @@ class Cons:
         return self.head, self.tail
 
 
-class Thunk:
+class Thunk(Stream):
     __slots__ = ('thunk',)
 
     def __init__(self, thunk):

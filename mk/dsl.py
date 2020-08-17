@@ -2,7 +2,7 @@ from functools import reduce, wraps
 
 from .core import copy
 from .run import run
-from .stream import ThunkStream
+from .stream import Stream
 from .unify import Var, walk
 
 
@@ -29,37 +29,74 @@ def conde(*ggs):
     return disjp(*(gs if callable(gs) else conjp(*gs) for gs in ggs))
 
 
-class Zzz(ThunkStream):
-    __slots__ = ('fn', 'state')
+class Apply(Stream):
+    __slots__ = ('state', 'delay')
 
-    def __init__(self, fn, state):
-        self.fn = fn
+    def __init__(self, state, delay):
         self.state = state
+        self.delay = delay
 
-    def __call__(self):
-        return self.fn()(self.state)
+    def mplus(self, stream):
+        return Apply(self.state, MPlusDelay(stream, self.delay))
+
+    def bind(self, goal):
+        return Apply(self.state, BindDelay(self.delay, goal))
+
+    def next(self):
+        return None, self.delay(self.state)
+
+
+class MPlusDelay:
+    __slots__ = ('stream', 'delay')
+
+    def __init__(self, stream, delay):
+        self.stream = stream
+        self.delay = delay
+
+    def __call__(self, state):
+        return self.stream.mplus(self.delay(state))
+
+
+class BindDelay:
+    __slots__ = ('delay', 'goal')
+
+    def __init__(self, delay, goal):
+        self.delay = delay
+        self.goal = goal
+
+    def __call__(self, state):
+        return self.delay(state).bind(self.goal)
+
+
+class Zzz:
+    __slots__ = ('fn',)
+
+    def __init__(self, fn):
+        self.fn = fn
+
+    def __call__(self, state):
+        return self.fn()(state)
 
 
 def zzz(thunk):
-    return lambda state: Zzz(thunk, state)
+    return lambda state: Apply(state, Zzz(thunk))
 
 
-class Delay(ThunkStream):
-    __slots__ = ('fn', 'args', 'state')
+class Delay:
+    __slots__ = ('fn', 'args')
 
-    def __init__(self, fn, args, state):
+    def __init__(self, fn, args):
         self.fn = fn
         self.args = args
-        self.state = state
 
-    def __call__(self):
-        return self.fn(*self.args)(self.state)
+    def __call__(self, state):
+        return self.fn(*self.args)(state)
 
 
 def delay(fn):
     @wraps(fn)
     def _constructor(*args):
-        return lambda state: Delay(fn, args, state)
+        return lambda state: Apply(state, Delay(fn, args))
     return _constructor
 
 

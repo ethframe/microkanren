@@ -2,7 +2,7 @@ from functools import reduce, wraps
 
 from .core import copy
 from .run import run
-from .stream import Thunk
+from .stream import Apply
 from .unify import Var, walk
 
 
@@ -29,14 +29,35 @@ def conde(*ggs):
     return disjp(*(gs if callable(gs) else conjp(*gs) for gs in ggs))
 
 
+class Zzz:
+    __slots__ = ('fn',)
+
+    def __init__(self, fn):
+        self.fn = fn
+
+    def __call__(self, state):
+        return self.fn()(state)
+
+
 def zzz(thunk):
-    return lambda state: Thunk(lambda: thunk()(state))
+    return lambda state: Apply(state, Zzz(thunk))
+
+
+class Delay:
+    __slots__ = ('fn', 'args')
+
+    def __init__(self, fn, args):
+        self.fn = fn
+        self.args = args
+
+    def __call__(self, state):
+        return self.fn(*self.args)(state)
 
 
 def delay(fn):
     @wraps(fn)
     def _constructor(*args):
-        return lambda state: Thunk(lambda: fn(*args)(state))
+        return lambda state: Apply(state, Delay(fn, args))
     return _constructor
 
 

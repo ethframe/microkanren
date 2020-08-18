@@ -13,7 +13,8 @@ c = Var()
 def zzz_goal(a, b):
     return conde(
         eq(b, (1, a)),
-        (eq(a, 1), zzz(lambda: zzz_goal(2, b)))
+        (eq(a, 1), zzz(lambda: zzz_goal(2, b))),
+        (eq(a, 2), zzz(lambda: zzz_goal(3, b)), eq(a, b))
     )
 
 
@@ -21,7 +22,8 @@ def zzz_goal(a, b):
 def delay_goal(a, b):
     return conde(
         eq(b, (1, a)),
-        (eq(a, 1), delay_goal(2, b))
+        (eq(a, 1), delay_goal(2, b)),
+        (eq(a, 2), delay_goal(3, b), eq(a, b))
     )
 
 

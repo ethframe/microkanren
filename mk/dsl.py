@@ -2,7 +2,7 @@ from functools import reduce, wraps
 
 from .core import copy
 from .run import run
-from .stream import Stream
+from .stream import Apply
 from .unify import Var, walk
 
 
@@ -27,45 +27,6 @@ def disjp(g, *gs):
 
 def conde(*ggs):
     return disjp(*(gs if callable(gs) else conjp(*gs) for gs in ggs))
-
-
-class Apply(Stream):
-    __slots__ = ('state', 'goal')
-
-    def __init__(self, state, goal):
-        self.state = state
-        self.goal = goal
-
-    def mplus(self, stream):
-        return Apply(self.state, MPlusGoal(stream, self.goal))
-
-    def bind(self, goal):
-        return Apply(self.state, BindGoal(self.goal, goal))
-
-    def next(self):
-        return None, self.goal(self.state)
-
-
-class MPlusGoal:
-    __slots__ = ('stream', 'goal')
-
-    def __init__(self, stream, goal):
-        self.stream = stream
-        self.goal = goal
-
-    def __call__(self, state):
-        return self.stream.mplus(self.goal(state))
-
-
-class BindGoal:
-    __slots__ = ('left', 'right')
-
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-
-    def __call__(self, state):
-        return self.left(state).bind(self.right)
 
 
 class Zzz:

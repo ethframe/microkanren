@@ -30,42 +30,42 @@ def conde(*ggs):
 
 
 class Apply(Stream):
-    __slots__ = ('state', 'delay')
+    __slots__ = ('state', 'goal')
 
-    def __init__(self, state, delay):
+    def __init__(self, state, goal):
         self.state = state
-        self.delay = delay
+        self.goal = goal
 
     def mplus(self, stream):
-        return Apply(self.state, MPlusDelay(stream, self.delay))
+        return Apply(self.state, MPlusGoal(stream, self.goal))
 
     def bind(self, goal):
-        return Apply(self.state, BindDelay(self.delay, goal))
+        return Apply(self.state, BindGoal(self.goal, goal))
 
     def next(self):
-        return None, self.delay(self.state)
+        return None, self.goal(self.state)
 
 
-class MPlusDelay:
-    __slots__ = ('stream', 'delay')
+class MPlusGoal:
+    __slots__ = ('stream', 'goal')
 
-    def __init__(self, stream, delay):
+    def __init__(self, stream, goal):
         self.stream = stream
-        self.delay = delay
-
-    def __call__(self, state):
-        return self.stream.mplus(self.delay(state))
-
-
-class BindDelay:
-    __slots__ = ('delay', 'goal')
-
-    def __init__(self, delay, goal):
-        self.delay = delay
         self.goal = goal
 
     def __call__(self, state):
-        return self.delay(state).bind(self.goal)
+        return self.stream.mplus(self.goal(state))
+
+
+class BindGoal:
+    __slots__ = ('left', 'right')
+
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+    def __call__(self, state):
+        return self.left(state).bind(self.right)
 
 
 class Zzz:

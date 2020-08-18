@@ -1,4 +1,4 @@
-class Stream:
+class Stream:  # pragma: no cover
     def mplus(self, stream):
         raise NotImplementedError()
 
